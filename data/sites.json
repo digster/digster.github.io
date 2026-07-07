@@ -1,0 +1,74 @@
+[
+  {
+    "name": "explainers",
+    "title": "Explainers",
+    "description": "Interactive, play-based visual explainers that make complex topics click.",
+    "url": "https://digster.github.io/explainers/",
+    "repo": "https://github.com/digster/explainers",
+    "tags": ["learning", "interactive"]
+  },
+  {
+    "name": "sdl3-tuts",
+    "title": "SDL3 Recipes",
+    "description": "75 hands-on C++ game-dev recipes spanning 2D, 3D and bgfx, all built on SDL3.",
+    "url": "https://digster.github.io/sdl3-tuts/",
+    "repo": "https://github.com/digster/sdl3-tuts",
+    "tags": ["gamedev", "c++", "tutorial"]
+  },
+  {
+    "name": "koi-engine",
+    "title": "Koi Engine 🐟",
+    "description": "An educational 3D graphics engine built from scratch in modern C++20 with SDL3, plus documented tutorials.",
+    "url": "https://digster.github.io/koi-engine/",
+    "repo": "https://github.com/digster/koi-engine",
+    "tags": ["graphics", "c++", "tutorial"]
+  },
+  {
+    "name": "2d-game-dev-tut",
+    "title": "Game Dev Math Guide",
+    "description": "An interactive learning path through the math behind game development, from beginner to expert.",
+    "url": "https://digster.github.io/2d-game-dev-tut/",
+    "repo": "https://github.com/digster/2d-game-dev-tut",
+    "tags": ["gamedev", "math", "learning"]
+  },
+  {
+    "name": "art-history",
+    "title": "Art History Explorer",
+    "description": "Browse an interactive collection of paintings and sort them by artist, movement or year.",
+    "url": "https://digster.github.io/art-history/",
+    "repo": "https://github.com/digster/art-history",
+    "tags": ["art", "interactive"]
+  },
+  {
+    "name": "research-topics-explorer",
+    "title": "The Vault",
+    "description": "A research workspace with a catalog, knowledge graph, thinker profiles and a built-in reader.",
+    "url": "https://digster.github.io/research-topics-explorer/",
+    "repo": "https://github.com/digster/research-topics-explorer",
+    "tags": ["research", "tools"]
+  },
+  {
+    "name": "topic-references",
+    "title": "Topic References",
+    "description": "Hand-picked study resources — books, papers, videos and courses — organized by topic.",
+    "url": "https://digster.github.io/topic-references/",
+    "repo": "https://github.com/digster/topic-references",
+    "tags": ["learning", "reference"]
+  },
+  {
+    "name": "newsletters-web",
+    "title": "Newsletters",
+    "description": "A tidy archive of past newsletter issues alongside a bookmarks collection.",
+    "url": "https://digster.github.io/newsletters-web/",
+    "repo": "https://github.com/digster/newsletters-web",
+    "tags": ["reading", "archive"]
+  },
+  {
+    "name": "unread-articles",
+    "title": "Unread Articles",
+    "description": "Beat the backlog — pull up a random article from your unread pile.",
+    "url": "https://digster.github.io/unread-articles/",
+    "repo": "https://github.com/digster/unread-articles",
+    "tags": ["reading", "tools"]
+  }
+]

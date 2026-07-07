@@ -1,0 +1,20 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Logs & temp
+*.log
+.cache/
+
+# Test artifacts (e.g. screenshots from browser/Playwright testing)
+screenshots/
+*.screenshot.png
+playwright-report/
+test-results/

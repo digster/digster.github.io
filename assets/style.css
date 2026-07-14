@@ -121,7 +121,7 @@ a { color: inherit; }
 
 .masthead__toprow {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;   /* avatar to the left, toggle to the right */
   align-items: center;
   gap: 0.75rem;
 }
@@ -134,29 +134,31 @@ a { color: inherit; }
 .avatar-link:hover { transform: translateY(-1px); }
 /* The GitHub avatar sits to the left of, and a little larger than, the toggle. */
 .avatar {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
 }
 
 .theme-toggle {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   display: grid;
   place-items: center;
-  font-size: 1.15rem;
+  font-size: 0.9rem;
   cursor: pointer;
   border: 1.5px solid var(--rule);
   border-radius: 4px;
   background: transparent;
   color: var(--text);
-  transition: background 0.18s ease, color 0.18s ease;
+  transition: border-color 0.18s ease, transform 0.18s ease;
 }
-.theme-toggle:hover { background: var(--text); }
-.theme-toggle:hover .theme-toggle__icon { filter: grayscale(1) brightness(2); }
+.theme-toggle:hover { border-color: var(--accent); }
 .theme-toggle:active { transform: scale(0.95); }
+/* Flatten the emoji to a monochrome glyph: black in light, white in dark. */
+.theme-toggle__icon { filter: brightness(0); line-height: 1; }
+[data-theme="dark"] .theme-toggle__icon { filter: brightness(0) invert(1); }
 
 .index-label {
   margin: 0.9rem 0 0;
@@ -298,16 +300,16 @@ a { color: inherit; }
 .tag {
   font: inherit;
   font-size: 0.72rem;
-  font-weight: 400;
+  font-weight: 700;
   cursor: pointer;
   padding: 0.22rem 0.55rem;
   border: 1px solid var(--line);
   border-radius: 2px;
   background: transparent;
-  color: var(--text-dim);
+  color: var(--text);
   transition: border-color 0.15s ease, color 0.15s ease;
 }
-.tag:hover { border-color: var(--text); color: var(--text); }
+.tag:hover { border-color: var(--text); }
 
 /* The chip echoed in the active-filter bar uses the accent. */
 .tag--active {

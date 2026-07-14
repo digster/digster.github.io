@@ -90,7 +90,6 @@ a { color: inherit; }
   align-items: flex-end;
   gap: 2rem;
   padding: clamp(2rem, 5vw, 3.5rem) 0 1.5rem;
-  border-bottom: 1.5px solid var(--rule);
 }
 
 .masthead__brand { min-width: 0; }
@@ -105,7 +104,7 @@ a { color: inherit; }
 }
 
 .wordmark__sub {
-  margin: 0.75rem 0 0;
+  margin: 1.2rem 0 0;
   font-size: clamp(0.95rem, 2.2vw, 1.05rem);
   font-weight: 600;
   color: var(--text);
@@ -130,9 +129,10 @@ a { color: inherit; }
   transition: transform 0.18s ease;
 }
 .avatar-link:hover { transform: translateY(-1px); }
+/* The GitHub avatar sits to the left of, and a little larger than, the toggle. */
 .avatar {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
@@ -158,19 +158,24 @@ a { color: inherit; }
 .index-label {
   margin: 0.9rem 0 0;
   padding-top: 0.9rem;
-  border-top: 1px solid var(--line);
+  border-top: 2px solid var(--rule);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 700;
   font-size: 0.72rem;
   color: var(--text);
 }
-.index-label__count { color: var(--accent); }
+/* Bolder, and the same grotesque figures as the list numbers. */
+.index-label__count {
+  color: var(--accent);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
 
 /* ---- Search ----------------------------------------------------------- */
 .search {
   position: relative;
-  margin-top: 0.9rem;
+  margin-top: 1.35rem;
 }
 .search__icon {
   position: absolute;
@@ -255,9 +260,8 @@ a { color: inherit; }
 }
 .entry__num {
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-dim);
-  font-variant-numeric: tabular-nums;
   flex: 0 0 auto;
 }
 .entry__title {
@@ -272,6 +276,7 @@ a { color: inherit; }
   margin: 0 0 1.1rem;
   color: var(--text-dim);
   font-size: 0.92rem;
+  font-weight: 500;
   line-height: 1.5;
   flex: 1;   /* push tags + actions to a consistent baseline across a row */
 }
@@ -288,7 +293,7 @@ a { color: inherit; }
 .tag {
   font: inherit;
   font-size: 0.72rem;
-  font-weight: 500;
+  font-weight: 400;
   cursor: pointer;
   padding: 0.22rem 0.55rem;
   border: 1px solid var(--line);
@@ -322,7 +327,7 @@ a { color: inherit; }
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 800;
   transition: gap 0.16s ease, opacity 0.16s ease;
 }
 .entry__visit { color: var(--accent); }

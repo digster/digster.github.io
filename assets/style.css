@@ -16,6 +16,9 @@
   --line: #d9d9d9;      /* soft hairlines: tag chips, minor dividers */
   --accent: #e5241d;    /* the one editorial red */
 
+  /* Monospaced figures for the catalog index numbers. */
+  --font-mono: ui-monospace, "SF Mono", "SFMono-Regular", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
+
   --maxw: 1180px;
 
   color-scheme: light;
@@ -165,10 +168,11 @@ a { color: inherit; }
   font-size: 0.72rem;
   color: var(--text);
 }
-/* Bolder, and the same grotesque figures as the list numbers. */
+/* Bolder, and the same monospaced figures as the list numbers. */
 .index-label__count {
+  font-family: var(--font-mono);
   color: var(--accent);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.02em;
 }
 
@@ -259,8 +263,9 @@ a { color: inherit; }
   margin-bottom: 0.7rem;
 }
 .entry__num {
-  font-size: 0.85rem;
-  font-weight: 800;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
   color: var(--text-dim);
   flex: 0 0 auto;
 }

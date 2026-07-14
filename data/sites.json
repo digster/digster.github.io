@@ -70,5 +70,13 @@
     "url": "https://digster.github.io/unread-articles/",
     "repo": "https://github.com/digster/unread-articles",
     "tags": ["reading", "tools"]
+  },
+  {
+    "name": "3d-physics",
+    "title": "3D Physics Engine",
+    "description": "An interactive tutorial that builds a 3D physics engine from scratch in C++20 and SDL3 — the integrators, collision detection, solver and renderer, all written by hand.",
+    "url": "https://digster.github.io/3d-physics/",
+    "repo": "https://github.com/digster/3d-physics",
+    "tags": ["gamedev", "c++", "tutorial"]
   }
 ]

@@ -24,10 +24,11 @@ index.html ──loads──▶ assets/app.js ──renders──▶ <section id
 assets/style.css     localStorage["theme"]  (persisted light/dark)
 ```
 
-1. **`index.html`** — semantic shell: a `<header class="hero">`, a search/filter
-   `<section class="controls">`, an empty `<section id="grid">` that JS fills,
-   and a footer. It also contains a tiny **inline no-flash theme script** in
-   `<head>` that sets `data-theme` on `<html>` before first paint.
+1. **`index.html`** — semantic shell: a `<header class="masthead">` (wordmark +
+   avatar, theme toggle, "Project Index" label and search), an empty
+   `<section id="grid">` that JS fills, and a footer. It also contains a tiny
+   **inline no-flash theme script** in `<head>` that sets `data-theme` on
+   `<html>` before first paint.
 2. **`data/sites.json`** — an array of site objects
    (`name`, `title`, `description`, `url`, `repo`, `tags`). This is the only file
    you edit to change what the gallery shows.
@@ -38,19 +39,22 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
 
 ## Key conventions (project-specific)
 
-- **Color is derived, not stored.** Each card's accent hue comes from its first
-  tag via a lookup table (`TAG_HUES` in `app.js`), with a hash-based nudge so
-  cards sharing a tag still differ. CSS reads the hue from an inline `--h`
-  custom property on each `.card` and builds every accent (bar, chips, button,
-  glow) from `hsl(var(--h) …)`. To recolor the palette, edit `TAG_HUES`.
+- **One accent, not per-topic color.** The design is monochrome (black ink on
+  white, inverted for dark) with a single red `--accent`. There is no per-card
+  hue logic; every accent comes from the token block. To restyle, edit the
+  tokens on `:root` / `[data-theme="dark"]` in `style.css`.
+- **The index count is derived.** `render()` sets the "Project Index / NN"
+  label from `sites.length`, and entries are numbered `01…NN` in array order —
+  both update automatically when `sites.json` changes.
 - **Theme is an attribute swap.** Light is the default token set on `:root`;
   dark is `[data-theme="dark"]`. The toggle only flips that attribute and
   persists it. Avoid hard-coding colors outside the token block.
 - **No `file://` assumptions.** Because content is loaded with `fetch()`, the
   site must be viewed over HTTP. Local dev = `python3 -m http.server`.
 - **`.nojekyll`** is present so GitHub Pages serves files verbatim.
-- **No external requests** except the GitHub avatar image in the hero. Fonts are
-  a system stack; the favicon is an inline SVG data URI. Keep it dependency-free.
+- **No external requests** except the GitHub avatar image in the masthead. Fonts
+  are a system grotesque stack; the favicon is an inline SVG data URI. Keep it
+  dependency-free.
 
 ## Developer workflows
 

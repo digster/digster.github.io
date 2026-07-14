@@ -2,7 +2,7 @@
    digster.github.io — app logic
    Responsibilities:
      1. Load the showcased sites from data/sites.json (single source of truth).
-     2. Render a colorful card per site, with a topic-derived accent hue.
+     2. Render a numbered catalog entry per site.
      3. Live text search + click-to-filter tag chips.
      4. Persisted light/dark theme toggle.
    Vanilla JS, no dependencies, no build step.
@@ -18,68 +18,51 @@
   const activeFilterTag = document.getElementById("active-filter-tag");
   const clearFilterBtn = document.getElementById("clear-filter");
   const themeToggle = document.getElementById("theme-toggle");
+  const indexCount = document.getElementById("index-count");
 
   /* ---- Filter state --------------------------------------------------- */
   let query = "";          // current search text (lowercased)
   let activeTag = null;    // currently selected tag, or null
 
-  /* =====================================================================
-     Colour: map a topic tag to a pleasant, intentional hue. Unknown tags
-     fall back to a hash so any future tag still gets a stable colour. A
-     small per-name nudge keeps sites that share a first tag visually
-     distinct, so the grid always reads as a varied mosaic.
-     ===================================================================== */
-  const TAG_HUES = {
-    learning: 265, interactive: 320, gamedev: 22, "c++": 210, tutorial: 175,
-    math: 145, graphics: 250, art: 340, research: 190, tools: 35,
-    reference: 285, reading: 160, archive: 200,
-  };
-
-  function hashString(str) {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) {
-      h = (h << 5) - h + str.charCodeAt(i);
-      h |= 0; // keep it a 32-bit int
-    }
-    return Math.abs(h);
-  }
-
-  function hueFor(site) {
-    const firstTag = (site.tags && site.tags[0]) || site.name;
-    const base = TAG_HUES[firstTag] !== undefined
-      ? TAG_HUES[firstTag]
-      : hashString(firstTag) % 360;
-    const nudge = (hashString(site.name) % 30) - 15; // -15..+14
-    return (base + nudge + 360) % 360;
-  }
+  /* ---- Small helpers -------------------------------------------------- */
+  // Zero-pad a 1-based position to two digits (1 -> "01", 10 -> "10").
+  function pad2(n) { return String(n).padStart(2, "0"); }
 
   /* =====================================================================
-     Rendering
+     Rendering — one catalog entry per site (number, title, description,
+     tag chips and Visit / Source actions).
      ===================================================================== */
-  function createCard(site) {
-    const card = document.createElement("article");
-    card.className = "card";
-    card.style.setProperty("--h", String(hueFor(site)));
+  function createCard(site, position) {
+    const entry = document.createElement("article");
+    entry.className = "entry";
 
     // Pre-compute a lowercase haystack for fast searching.
     const haystack = [site.title, site.name, site.description, (site.tags || []).join(" ")]
       .join(" ")
       .toLowerCase();
-    card.dataset.search = haystack;
-    card.dataset.tags = (site.tags || []).join(",");
+    entry.dataset.search = haystack;
+    entry.dataset.tags = (site.tags || []).join(",");
 
-    const body = document.createElement("div");
+    // Head: index number + title
+    const head = document.createElement("div");
+    head.className = "entry__head";
+
+    const num = document.createElement("span");
+    num.className = "entry__num";
+    num.textContent = pad2(position);
 
     const title = document.createElement("h2");
-    title.className = "card__title";
+    title.className = "entry__title";
     title.textContent = site.title;
 
+    head.append(num, title);
+
     const desc = document.createElement("p");
-    desc.className = "card__desc";
+    desc.className = "entry__desc";
     desc.textContent = site.description;
 
     const tags = document.createElement("ul");
-    tags.className = "card__tags";
+    tags.className = "entry__tags";
     (site.tags || []).forEach(function (tag) {
       const li = document.createElement("li");
       const chip = document.createElement("button");
@@ -93,13 +76,11 @@
       tags.appendChild(li);
     });
 
-    body.append(title, desc, tags);
-
     const actions = document.createElement("div");
-    actions.className = "card__actions";
+    actions.className = "entry__actions";
 
     const visit = document.createElement("a");
-    visit.className = "btn btn--primary";
+    visit.className = "entry__visit";
     visit.href = site.url;
     visit.target = "_blank";
     visit.rel = "noopener";
@@ -107,39 +88,42 @@
     visit.setAttribute("aria-label", "Visit " + site.title);
 
     const source = document.createElement("a");
-    source.className = "btn btn--ghost";
+    source.className = "entry__source";
     source.href = site.repo;
     source.target = "_blank";
     source.rel = "noopener";
-    source.textContent = "Source";
+    source.innerHTML = "Source <span aria-hidden=\"true\">↗</span>";
     source.setAttribute("aria-label", site.title + " source on GitHub");
 
     actions.append(visit, source);
-    card.append(body, actions);
-    return card;
+    entry.append(head, desc, tags, actions);
+    return entry;
   }
 
   function render(sites) {
     const fragment = document.createDocumentFragment();
-    sites.forEach(function (site) { fragment.appendChild(createCard(site)); });
+    sites.forEach(function (site, i) { fragment.appendChild(createCard(site, i + 1)); });
     grid.innerHTML = "";
     grid.appendChild(fragment);
     grid.setAttribute("aria-busy", "false");
+
+    // Reflect the catalog size in the "Project Index / NN" label.
+    if (indexCount) indexCount.textContent = "/ " + pad2(sites.length);
   }
 
   /* =====================================================================
      Filtering (search text AND selected tag)
      ===================================================================== */
   function applyFilters() {
-    const cards = grid.querySelectorAll(".card");
+    const entries = grid.querySelectorAll(".entry");
     let visible = 0;
 
-    cards.forEach(function (card) {
-      const matchesText = !query || card.dataset.search.includes(query);
-      const cardTags = card.dataset.tags ? card.dataset.tags.split(",") : [];
-      const matchesTag = !activeTag || cardTags.indexOf(activeTag) !== -1;
+    entries.forEach(function (entry) {
+      const matchesText = !query || entry.dataset.search.includes(query);
+      const entryTags = entry.dataset.tags ? entry.dataset.tags.split(",") : [];
+      const matchesTag = !activeTag || entryTags.indexOf(activeTag) !== -1;
       const show = matchesText && matchesTag;
-      card.hidden = !show;
+      entry.hidden = !show;
       if (show) visible++;
     });
 

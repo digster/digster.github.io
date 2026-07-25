@@ -72,11 +72,27 @@
     "tags": ["reading", "tools"]
   },
   {
-    "name": "3d-physics",
-    "title": "3D Physics Engine",
-    "description": "An interactive tutorial that builds a 3D physics engine from scratch in C++20 and SDL3 — the integrators, collision detection, solver and renderer, all written by hand.",
-    "url": "https://digster.github.io/3d-physics/",
-    "repo": "https://github.com/digster/3d-physics",
+    "name": "3d-physics-course",
+    "title": "3D Physics From Scratch",
+    "description": "Twenty chapters that grow a real rigid-body engine in C++20 and SDL3 — integration, collision detection, friction, joints and soft bodies, each with a runnable demo.",
+    "url": "https://digster.github.io/3d-physics-course/",
+    "repo": "https://github.com/digster/3d-physics-course",
     "tags": ["gamedev", "c++", "tutorial"]
+  },
+  {
+    "name": "renderbook",
+    "title": "Renderbook",
+    "description": "109 lessons that start by teaching your CPU to draw a triangle and end at a cross-platform SDL_GPU renderer, engine systems and a playable arena.",
+    "url": "https://digster.github.io/renderbook/",
+    "repo": "https://github.com/digster/renderbook",
+    "tags": ["graphics", "c++", "tutorial"]
+  },
+  {
+    "name": "3d-engine-course",
+    "title": "Professional 3D Game Engine",
+    "description": "A 94-lesson course on designing, building and shipping a production-shaped 3D engine in C++20 on SDL3 — architecture and craft, not just rendering.",
+    "url": "https://digster.github.io/3d-engine-course/",
+    "repo": "https://github.com/digster/3d-engine-course",
+    "tags": ["gamedev", "graphics", "c++"]
   }
 ]

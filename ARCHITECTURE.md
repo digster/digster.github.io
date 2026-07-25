@@ -63,7 +63,24 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
 | Preview locally   | `python3 -m http.server 8000` then open `localhost:8000`  |
 | Add a project     | Append an object to `data/sites.json` (see `README.md`)   |
 | Validate the data | `python3 -m json.tool data/sites.json`                    |
+| Audit live Pages  | Probe each repo's URL (see below) — `200` = live, `404` = no Pages |
 | Deploy            | Push to the default branch — GitHub Pages redeploys root  |
+
+### Auditing which repos have live Pages
+
+Don't trust the repo list or the API's `has_pages` flag alone — ask the server
+what a visitor would actually get:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}' -L "https://digster.github.io/<repo>/"
+```
+
+Run it over every repo on the account. This is the canonical check because it
+catches all three cases in one pass: **new** Pages sites to add, repos that only
+*look* like sites (source-only → `404`), and — importantly — **entries that have
+rotted**. A repo rename leaves a listed entry pointing at a dead URL while the
+project itself is alive under a new slug, so audit for removals as well as
+additions. (`3d-physics` → `3d-physics-course` did exactly this.)
 
 ## Why these decisions
 

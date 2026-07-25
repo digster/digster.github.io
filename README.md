@@ -49,6 +49,12 @@ Open [`data/sites.json`](data/sites.json) and add an object to the array:
 Entries are numbered automatically in array order (`01`, `02`, …), so adding an
 object is all it takes. Commit, push, and GitHub Pages redeploys.
 
+To find out which repos actually have a live Pages site (and to catch entries
+whose repo was renamed, leaving a dead link behind), probe the URLs rather than
+trusting the repo list — `curl -s -o /dev/null -w '%{http_code}' -L
+"https://digster.github.io/<repo>/"`; `200` means live, `404` means no Pages.
+See [`ARCHITECTURE.md`](ARCHITECTURE.md#auditing-which-repos-have-live-pages).
+
 ## Local preview
 
 `fetch()` needs to be served over HTTP (not opened via `file://`), so run any

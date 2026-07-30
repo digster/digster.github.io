@@ -43,6 +43,11 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
   white, inverted for dark) with a single red `--accent`. There is no per-card
   hue logic; every accent comes from the token block. To restyle, edit the
   tokens on `:root` / `[data-theme="dark"]` in `style.css`.
+- **Titles carry their emoji in the data.** Each `title` in `sites.json` ends
+  with one representative emoji; `createCard()` just sets it as `textContent`,
+  so there is no icon field, no icon markup and no icon CSS. Distinguishing
+  glyphs matter more than decoration — the four "build a 3D thing" entries are
+  told apart by 🐟 / 🎱 / 🔺 / ⚙️.
 - **The index count is derived.** `render()` sets the "Project Index / NN"
   label from `sites.length`, and entries are numbered `01…NN` in array order —
   both update automatically when `sites.json` changes.

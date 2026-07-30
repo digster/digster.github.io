@@ -40,3 +40,17 @@ Added the three that weren't listed (`3d-physics-course`, `renderbook`,
 `3d-engine-course`) and replaced the now-dead `3d-physics` entry — that repo was
 renamed to `3d-physics-course`, so its old URL 404s. Directory is now 12
 projects.
+
+---
+
+**2026-07-30**
+
+> - look for any new updates to the github pages and update the data file
+>   accordingly
+> - add a representative emoticon to the title in the card (similar to koi
+>   engine)
+
+Re-probed all 64 account repos: 14 live Pages sites (this one plus 13 projects).
+Added the one new site, `knowledge`; all 12 existing entries still return `200`.
+Gave every entry a representative emoji in its `title`, matching the existing
+`Koi Engine 🐟` pattern. Data-only change — no code, markup or CSS touched.

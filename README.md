@@ -40,7 +40,7 @@ Open [`data/sites.json`](data/sites.json) and add an object to the array:
 | Field         | Purpose                                                            |
 | ------------- | ----------------------------------------------------------------- |
 | `name`        | Short slug (used for search).                                     |
-| `title`       | Entry heading (emoji welcome).                                    |
+| `title`       | Entry heading, ending in one representative emoji (see below).    |
 | `description` | One sentence shown under the title.                               |
 | `url`         | The live site to link to (the **Visit site** action).            |
 | `repo`        | The GitHub repository (the **Source** action).                    |
@@ -48,6 +48,11 @@ Open [`data/sites.json`](data/sites.json) and add an object to the array:
 
 Entries are numbered automatically in array order (`01`, `02`, …), so adding an
 object is all it takes. Commit, push, and GitHub Pages redeploys.
+
+**Title emoji:** every `title` ends with a single space and one emoji that hints
+at what the project *is* (`Renderbook 🔺`, `3D Physics From Scratch 🎱`) — pick a
+subject-specific glyph rather than a generic 🚀, and don't reuse one already in
+the list. It lives in the data, not the markup, so no code change is needed.
 
 To find out which repos actually have a live Pages site (and to catch entries
 whose repo was renamed, leaving a dead link behind), probe the URLs rather than

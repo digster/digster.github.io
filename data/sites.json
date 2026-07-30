@@ -1,7 +1,7 @@
 [
   {
     "name": "explainers",
-    "title": "Explainers",
+    "title": "Explainers 💡",
     "description": "Interactive, play-based visual explainers that make complex topics click.",
     "url": "https://digster.github.io/explainers/",
     "repo": "https://github.com/digster/explainers",
@@ -9,7 +9,7 @@
   },
   {
     "name": "sdl3-tuts",
-    "title": "SDL3 Recipes",
+    "title": "SDL3 Recipes 🎮",
     "description": "75 hands-on C++ game-dev recipes spanning 2D, 3D and bgfx, all built on SDL3.",
     "url": "https://digster.github.io/sdl3-tuts/",
     "repo": "https://github.com/digster/sdl3-tuts",
@@ -25,7 +25,7 @@
   },
   {
     "name": "2d-game-dev-tut",
-    "title": "Game Dev Math Guide",
+    "title": "Game Dev Math Guide 📐",
     "description": "An interactive learning path through the math behind game development, from beginner to expert.",
     "url": "https://digster.github.io/2d-game-dev-tut/",
     "repo": "https://github.com/digster/2d-game-dev-tut",
@@ -33,7 +33,7 @@
   },
   {
     "name": "art-history",
-    "title": "Art History Explorer",
+    "title": "Art History Explorer 🖼️",
     "description": "Browse an interactive collection of paintings and sort them by artist, movement or year.",
     "url": "https://digster.github.io/art-history/",
     "repo": "https://github.com/digster/art-history",
@@ -41,7 +41,7 @@
   },
   {
     "name": "research-topics-explorer",
-    "title": "The Vault",
+    "title": "The Vault 🗝️",
     "description": "A research workspace with a catalog, knowledge graph, thinker profiles and a built-in reader.",
     "url": "https://digster.github.io/research-topics-explorer/",
     "repo": "https://github.com/digster/research-topics-explorer",
@@ -49,7 +49,7 @@
   },
   {
     "name": "topic-references",
-    "title": "Topic References",
+    "title": "Topic References 📚",
     "description": "Hand-picked study resources — books, papers, videos and courses — organized by topic.",
     "url": "https://digster.github.io/topic-references/",
     "repo": "https://github.com/digster/topic-references",
@@ -57,7 +57,7 @@
   },
   {
     "name": "newsletters-web",
-    "title": "Newsletters",
+    "title": "Newsletters 📰",
     "description": "A tidy archive of past newsletter issues alongside a bookmarks collection.",
     "url": "https://digster.github.io/newsletters-web/",
     "repo": "https://github.com/digster/newsletters-web",
@@ -65,7 +65,7 @@
   },
   {
     "name": "unread-articles",
-    "title": "Unread Articles",
+    "title": "Unread Articles 📥",
     "description": "Beat the backlog — pull up a random article from your unread pile.",
     "url": "https://digster.github.io/unread-articles/",
     "repo": "https://github.com/digster/unread-articles",
@@ -73,7 +73,7 @@
   },
   {
     "name": "3d-physics-course",
-    "title": "3D Physics From Scratch",
+    "title": "3D Physics From Scratch 🎱",
     "description": "Twenty chapters that grow a real rigid-body engine in C++20 and SDL3 — integration, collision detection, friction, joints and soft bodies, each with a runnable demo.",
     "url": "https://digster.github.io/3d-physics-course/",
     "repo": "https://github.com/digster/3d-physics-course",
@@ -81,7 +81,7 @@
   },
   {
     "name": "renderbook",
-    "title": "Renderbook",
+    "title": "Renderbook 🔺",
     "description": "109 lessons that start by teaching your CPU to draw a triangle and end at a cross-platform SDL_GPU renderer, engine systems and a playable arena.",
     "url": "https://digster.github.io/renderbook/",
     "repo": "https://github.com/digster/renderbook",
@@ -89,10 +89,18 @@
   },
   {
     "name": "3d-engine-course",
-    "title": "Professional 3D Game Engine",
+    "title": "Professional 3D Game Engine ⚙️",
     "description": "A 94-lesson course on designing, building and shipping a production-shaped 3D engine in C++20 on SDL3 — architecture and craft, not just rendering.",
     "url": "https://digster.github.io/3d-engine-course/",
     "repo": "https://github.com/digster/3d-engine-course",
     "tags": ["gamedev", "graphics", "c++"]
+  },
+  {
+    "name": "knowledge",
+    "title": "Knowledge 🧠",
+    "description": "A searchable library of deep-dive research notes across 38 domains — from complex systems and category theory to architecture and creative coding.",
+    "url": "https://digster.github.io/knowledge/",
+    "repo": "https://github.com/digster/knowledge",
+    "tags": ["research", "reference", "learning"]
   }
 ]

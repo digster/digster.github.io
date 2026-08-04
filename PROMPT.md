@@ -54,3 +54,14 @@ Re-probed all 64 account repos: 14 live Pages sites (this one plus 13 projects).
 Added the one new site, `knowledge`; all 12 existing entries still return `200`.
 Gave every entry a representative emoji in its `title`, matching the existing
 `Koi Engine 🐟` pattern. Data-only change — no code, markup or CSS touched.
+
+---
+
+**2026-08-04**
+
+> check for any github sites updates and update the data file accordingly.
+
+Re-probed all 65 account repos: 15 answer `200` (this site plus 14 projects).
+Added the one new site, `syllabus` — Syllabus Library, self-directed study plans.
+All 13 existing entries still return `200`, so nothing had rotted. Data-only
+change; the directory is now 14 projects.

@@ -102,5 +102,13 @@
     "url": "https://digster.github.io/knowledge/",
     "repo": "https://github.com/digster/knowledge",
     "tags": ["research", "reference", "learning"]
+  },
+  {
+    "name": "syllabus",
+    "title": "Syllabus Library 🧭",
+    "description": "Self-directed study plans — each topic gets a sequenced syllabus of modules, exercises and checkpoints, backed by a categorized reading list.",
+    "url": "https://digster.github.io/syllabus/",
+    "repo": "https://github.com/digster/syllabus",
+    "tags": ["learning", "reference"]
   }
 ]

@@ -110,5 +110,13 @@
     "url": "https://digster.github.io/syllabus/",
     "repo": "https://github.com/digster/syllabus",
     "tags": ["learning", "reference"]
+  },
+  {
+    "name": "mindflow",
+    "title": "MindFlow ✏️",
+    "description": "An infinite-canvas whiteboard that runs from a single HTML file — shapes, sticky notes, freehand and self-routing connectors, saved as documented JSON boards you own.",
+    "url": "https://digster.github.io/mindflow/",
+    "repo": "https://github.com/digster/mindflow",
+    "tags": ["tools", "interactive"]
   }
 ]

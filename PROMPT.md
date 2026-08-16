@@ -65,3 +65,14 @@ Re-probed all 65 account repos: 15 answer `200` (this site plus 14 projects).
 Added the one new site, `syllabus` — Syllabus Library, self-directed study plans.
 All 13 existing entries still return `200`, so nothing had rotted. Data-only
 change; the directory is now 14 projects.
+
+---
+
+**2026-08-16**
+
+> Check for any GitHub sites updates and update the data file.
+
+Re-probed all 67 account repos: 16 answer `200` (this site plus 15 projects).
+Added the one new site, `mindflow` — MindFlow, a single-file infinite-canvas
+whiteboard. All 14 existing entries still return `200`, so nothing had rotted.
+Data-only change; the directory is now 15 projects.

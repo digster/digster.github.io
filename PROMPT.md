@@ -76,3 +76,15 @@ Re-probed all 67 account repos: 16 answer `200` (this site plus 15 projects).
 Added the one new site, `mindflow` — MindFlow, a single-file infinite-canvas
 whiteboard. All 14 existing entries still return `200`, so nothing had rotted.
 Data-only change; the directory is now 15 projects.
+
+---
+
+**2026-08-23**
+
+> Check for any GitHub sites updates and update the data file.
+
+Re-probed all 69 account repos: 18 answer `200` (this site plus 17 projects).
+Added the two new sites, `book-reviews` — The Deep Read, long-form book essays —
+and `icecap-engine` — Icecap Engine, an iOS-first low-poly 3D engine and its
+manual. All 15 existing entries still return `200`, so nothing had rotted.
+Data-only change; the directory is now 17 projects.

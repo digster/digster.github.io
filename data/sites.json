@@ -118,5 +118,21 @@
     "url": "https://digster.github.io/mindflow/",
     "repo": "https://github.com/digster/mindflow",
     "tags": ["tools", "interactive"]
+  },
+  {
+    "name": "book-reviews",
+    "title": "The Deep Read 📖",
+    "description": "Long-form essays that take one book at a time — reconstructing its argument at full strength, then testing what it predicts and saying plainly where it doesn’t hold.",
+    "url": "https://digster.github.io/book-reviews/",
+    "repo": "https://github.com/digster/book-reviews",
+    "tags": ["reading", "research"]
+  },
+  {
+    "name": "icecap-engine",
+    "title": "Icecap Engine 🧊",
+    "description": "An iOS-first 3D engine for low-poly isometric games, built in C++20 on SDL3 — the full guide and manual, from architecture and conventions through scripting to the demo walkthrough.",
+    "url": "https://digster.github.io/icecap-engine/",
+    "repo": "https://github.com/digster/icecap-engine",
+    "tags": ["gamedev", "graphics", "c++"]
   }
 ]

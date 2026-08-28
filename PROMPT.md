@@ -88,3 +88,16 @@ Added the two new sites, `book-reviews` — The Deep Read, long-form book essays
 and `icecap-engine` — Icecap Engine, an iOS-first low-poly 3D engine and its
 manual. All 15 existing entries still return `200`, so nothing had rotted.
 Data-only change; the directory is now 17 projects.
+
+---
+
+**2026-08-28**
+
+> Check for any updates to the GitHub pages sites and update the data file
+> accordingly.
+
+Re-probed all 71 account repos: 20 answer `200` (this site plus 19 projects).
+Added the two new sites, `books` — The Understudy, readthroughs that transmit
+what a book contains — and `civ-timeline` — Atlas of Civilizations, an animated
+5,500-year world map. All 17 existing entries still return `200`, so nothing had
+rotted. Data-only change; the directory is now 19 projects.

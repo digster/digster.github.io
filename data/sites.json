@@ -134,5 +134,21 @@
     "url": "https://digster.github.io/icecap-engine/",
     "repo": "https://github.com/digster/icecap-engine",
     "tags": ["gamedev", "graphics", "c++"]
+  },
+  {
+    "name": "books",
+    "title": "The Understudy 🎭",
+    "description": "Readthroughs that transmit what a book actually contains — its arguments, machinery, evidence and cases — in enough depth that reading the pages gives you what reading the book would have.",
+    "url": "https://digster.github.io/books/",
+    "repo": "https://github.com/digster/books",
+    "tags": ["reading", "learning"]
+  },
+  {
+    "name": "civ-timeline",
+    "title": "Atlas of Civilizations 🗺️",
+    "description": "An animated world map of every major recorded civilization, from Sumer to the modern age — press play and watch empires rise, collide, migrate and collapse across five and a half thousand years.",
+    "url": "https://digster.github.io/civ-timeline/",
+    "repo": "https://github.com/digster/civ-timeline",
+    "tags": ["interactive", "learning"]
   }
 ]

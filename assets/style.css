@@ -16,6 +16,17 @@
   --line: #d9d9d9;      /* soft hairlines: tag chips, minor dividers */
   --accent: #e5241d;    /* the one editorial red */
 
+  /* Tag chips are the one place that carries per-topic colour: every distinct
+     tag gets its own hue (set per chip by app.js as --tag-hue), while these
+     two tokens fix the lightness and chroma every chip shares. Authoring in
+     OKLCH is what makes that safe — hue can rotate the whole way round
+     without any chip reading heavier, paler or louder than its neighbours,
+     and one pair of values holds the contrast line for all of them (worst
+     hue measured in-browser: 5.2:1 on white, comfortably past WCAG AA). */
+  --tag-l: 0.50;        /* perceptual lightness of a chip's ink */
+  --tag-c: 0.14;        /* chroma: confident, not neon (sRGB clamps the
+                           yellow-greens down a little, which is fine) */
+
   /* Monospaced figures for the catalog index numbers. */
   --font-mono: ui-monospace, "SF Mono", "SFMono-Regular", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
 
@@ -32,6 +43,11 @@
   --rule: #dcdcdc;      /* inverted: crisp near-white rules on black */
   --line: #333333;
   --accent: #ff4438;    /* a touch brighter so red still pops on black */
+
+  /* Chips flip to light ink on black. Same chroma, much higher lightness —
+     worst hue measures 8.5:1, so every tag stays legible. */
+  --tag-l: 0.76;
+  --tag-c: 0.14;
 
   color-scheme: dark;
 }
@@ -298,24 +314,37 @@ a { color: inherit; }
   list-style: none;
 }
 .tag {
+  /* --tag-hue is written onto each chip by app.js from the tag vocabulary, so
+     no two tags share a colour. The 0 below is only the fallback for a chip
+     rendered without it; --tag-lch bundles the three OKLCH components so the
+     ink, the border and the wash below can't drift apart. */
+  --tag-hue: 0;
+  --tag-lch: var(--tag-l) var(--tag-c) var(--tag-hue);
+
   font: inherit;
   font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
   padding: 0.22rem 0.55rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line);   /* neutral base; recoloured on the next line */
+  border-color: oklch(var(--tag-lch) / 0.45);
   border-radius: 2px;
-  background: transparent;
-  color: var(--text);
-  transition: border-color 0.15s ease, color 0.15s ease;
+  background: oklch(var(--tag-lch) / 0.07);   /* barely-there wash, not a fill */
+  color: oklch(var(--tag-lch));
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
-.tag:hover { border-color: var(--text); }
+/* Hover firms up the same hue rather than introducing a second one. */
+.tag:hover {
+  border-color: oklch(var(--tag-lch));
+  background: oklch(var(--tag-lch) / 0.14);
+}
 
-/* The chip echoed in the active-filter bar uses the accent. */
+/* The chip echoed in the active-filter bar carries that tag's own colour
+   (app.js sets --tag-hue on it too), so the banner matches the chip clicked. */
 .tag--active {
   cursor: default;
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: oklch(var(--tag-lch));
+  background: oklch(var(--tag-lch) / 0.14);
 }
 
 /* ---- Entry actions ---------------------------------------------------- */

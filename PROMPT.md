@@ -101,3 +101,17 @@ Added the two new sites, `books` — The Understudy, readthroughs that transmit
 what a book contains — and `civ-timeline` — Atlas of Civilizations, an animated
 5,500-year world map. All 17 existing entries still return `200`, so nothing had
 rotted. Data-only change; the directory is now 19 projects.
+
+---
+
+**2026-08-29**
+
+> all distinct tags should have unique color.
+
+Gave every distinct tag its own colour. `buildTagHues()` in `app.js` derives the
+tag vocabulary from `sites.json` and spreads hues evenly around the wheel over
+that set (13 tags → 27.7° apart), so collisions are impossible and no colour
+table has to be kept in sync with the data; `style.css` supplies the shared
+OKLCH lightness/chroma per theme. Verified in Chromium: 13 distinct colours,
+worst-case contrast 5.2:1 light and 8.5:1 dark.
+

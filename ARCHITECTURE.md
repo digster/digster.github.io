@@ -39,10 +39,32 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
 
 ## Key conventions (project-specific)
 
-- **One accent, not per-topic color.** The design is monochrome (black ink on
-  white, inverted for dark) with a single red `--accent`. There is no per-card
-  hue logic; every accent comes from the token block. To restyle, edit the
-  tokens on `:root` / `[data-theme="dark"]` in `style.css`.
+- **One accent everywhere, one hue per tag.** The design is monochrome (black
+  ink on white, inverted for dark) with a single red `--accent`. Tag chips are
+  the one deliberate exception: **every distinct tag renders in its own
+  colour**, so a topic is recognisable before it is read. There is still no
+  per-*card* hue logic — a card takes its colour only from the chips it
+  happens to carry. To restyle, edit the tokens on `:root` /
+  `[data-theme="dark"]` in `style.css`.
+- **Tag colours are derived, never listed.** `buildTagHues()` in `app.js`
+  collects the distinct tags across `sites.json`, sorts them, and spreads hues
+  evenly around the 360° wheel over that set — 13 tags today land 27.7° apart.
+  Two things follow, and both are the reason it is done this way rather than
+  with a tag→colour table: **collisions are impossible** (n tags, n slots), and
+  the palette re-spaces itself when the vocabulary changes, so adding a tag to
+  the data needs no code edit. The trade is that colours shift when a *new*
+  tag appears — the vocabulary, not the individual tag, is what fixes a hue.
+  Sorting keeps it deterministic: the same tag set always yields the same
+  colours.
+- **Only the hue varies; lightness and chroma are tokens.** `app.js` writes
+  `--tag-hue` onto each chip and nothing else; `--tag-l` / `--tag-c` in
+  `style.css` supply the rest, per theme. Colours are authored in **OKLCH**
+  precisely so that this split works — hue can rotate the whole way round at
+  fixed lightness without any chip reading heavier or louder than its
+  neighbours, and a single pair of values holds the contrast line for every
+  hue at once (measured in-browser: worst case 5.2:1 light, 8.5:1 dark, both
+  past WCAG AA). Keep new chip styling inside `oklch(var(--tag-lch) …)` so the
+  ink, border and background wash can't drift apart.
 - **Titles carry their emoji in the data.** Each `title` in `sites.json` ends
   with one representative emoji; `createCard()` just sets it as `textContent`,
   so there is no icon field, no icon markup and no icon CSS. Distinguishing
@@ -68,6 +90,7 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
 | Preview locally   | `python3 -m http.server 8000` then open `localhost:8000`  |
 | Add a project     | Append an object to `data/sites.json` (see `README.md`)   |
 | Validate the data | `python3 -m json.tool data/sites.json`                    |
+| Check tag colours | Load the page and confirm each chip's `--tag-hue` differs; contrast is measured against `--bg` in both themes |
 | Audit live Pages  | Probe each repo's URL (see below) — `200` = live, `404` = no Pages |
 | Deploy            | Push to the default branch — GitHub Pages redeploys root  |
 

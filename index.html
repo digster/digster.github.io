@@ -78,6 +78,14 @@
     </header>
 
     <main class="container">
+      <!-- Topic filter row: one chip per distinct tag in data/sites.json,
+           plus an "All" reset. Built by app.js, so it needs no edit here
+           when the tag vocabulary changes. -->
+      <nav class="tagbar" aria-label="Filter projects by topic">
+        <span class="tagbar__label">Topics</span>
+        <ul id="tagbar-list" class="tagbar__list"></ul>
+      </nav>
+
       <!-- Slim bar that only appears while a tag filter is active -->
       <p id="active-filter" class="active-filter" hidden>
         Filtering by <span id="active-filter-tag" class="tag tag--active"></span>

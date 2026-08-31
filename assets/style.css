@@ -16,16 +16,28 @@
   --line: #d9d9d9;      /* soft hairlines: tag chips, minor dividers */
   --accent: #e5241d;    /* the one editorial red */
 
-  /* Tag chips are the one place that carries per-topic colour: every distinct
-     tag gets its own hue (set per chip by app.js as --tag-hue), while these
-     two tokens fix the lightness and chroma every chip shares. Authoring in
-     OKLCH is what makes that safe — hue can rotate the whole way round
-     without any chip reading heavier, paler or louder than its neighbours,
-     and one pair of values holds the contrast line for all of them (worst
-     hue measured in-browser: 5.2:1 on white, comfortably past WCAG AA). */
-  --tag-l: 0.50;        /* perceptual lightness of a chip's ink */
-  --tag-c: 0.14;        /* chroma: confident, not neon (sRGB clamps the
-                           yellow-greens down a little, which is fine) */
+  /* Tag chips are the one place that carries per-topic colour. app.js gives
+     each distinct tag its own hue (--tag-hue) and drops every other tag into
+     the alternate lightness band (--tag-l-alt, applied as .tag--alt), so two
+     chips are told apart in two dimensions rather than one.
+
+     Hue alone is not enough down here: sRGB has no room for a saturated
+     yellow, green or teal at a lightness dark enough to read on white, so
+     those hues get squeezed toward grey and neighbouring topics converge.
+     Staggering the lightness separates them in a dimension the gamut cannot
+     squeeze, and it is free in contrast terms because the alternate band is
+     the darker one on white. Measured in Chromium: the closest pair of the
+     thirteen goes from 0.043 to 0.077 in Oklab — under two just-noticeable
+     differences to over three.
+
+     Chroma stays modest on purpose. Ask for more than sRGB holds and every
+     engine improvises differently (Chromium clips per channel, others reduce
+     chroma per the spec), so the palette would stop being the same palette
+     from browser to browser. 0.11 keeps all thirteen hues at or near the
+     gamut edge. Worst chip: 5.0:1 against its own washed background. */
+  --tag-l: 0.48;        /* perceptual lightness of a chip's ink */
+  --tag-l-alt: 0.40;    /* alternate band: every other tag around the wheel */
+  --tag-c: 0.11;        /* chroma: as much as sRGB holds at these lightnesses */
 
   /* Monospaced figures for the catalog index numbers. */
   --font-mono: ui-monospace, "SF Mono", "SFMono-Regular", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
@@ -44,10 +56,15 @@
   --line: #333333;
   --accent: #ff4438;    /* a touch brighter so red still pops on black */
 
-  /* Chips flip to light ink on black. Same chroma, much higher lightness —
-     worst hue measures 8.5:1, so every tag stays legible. */
+  /* Chips flip to light ink on black, and the whole set can take more chroma
+     up here: sRGB is widest around L 0.7 for most hues, so dark-mode chips
+     are the more colourful of the two themes. The alternate band still goes
+     darker — going lighter instead would run straight out of gamut in the
+     blues. Closest pair measures 0.107 in Oklab (was 0.063), worst chip
+     5.2:1 against its own washed background. */
   --tag-l: 0.76;
-  --tag-c: 0.14;
+  --tag-l-alt: 0.66;
+  --tag-c: 0.13;
 
   color-scheme: dark;
 }
@@ -258,6 +275,55 @@ a { color: inherit; }
 }
 .clear-filter:hover { border-color: var(--accent); color: var(--accent); }
 
+/* ---- Topic filter row ------------------------------------------------- */
+/* A full vocabulary of clickable topics sitting above the catalog, so the
+   filters are discoverable without first spotting a chip on some card. Built
+   from the data by app.js, so it needs no maintenance when sites.json grows. */
+.tagbar {
+  display: flex;
+  align-items: baseline;
+  gap: 1.1rem;
+  margin: 0 0 1.6rem;
+  padding-top: 0.9rem;
+  border-top: 2px solid var(--rule);
+}
+
+.tagbar__label {
+  flex: 0 0 auto;
+  padding-top: 0.22rem;   /* optically align the caps with the chip text */
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  font-size: 0.72rem;
+  color: var(--text);
+}
+
+.tagbar__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The "All" reset chip is the one chip with no topic, so it stays monochrome
+   and inverts to the page's own ink when nothing is filtered. */
+.tag--all {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--text);
+}
+.tag--all:hover:not([disabled]):not([aria-pressed="true"]) {
+  border-color: var(--text);
+  background: transparent;
+}
+.tag--all[aria-pressed="true"] {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+}
+
 /* ---- Catalog grid ----------------------------------------------------- */
 .grid {
   display: grid;
@@ -329,12 +395,21 @@ a { color: inherit; }
   border: 1px solid var(--line);   /* neutral base; recoloured on the next line */
   border-color: oklch(var(--tag-lch) / 0.45);
   border-radius: 2px;
-  background: oklch(var(--tag-lch) / 0.07);   /* barely-there wash, not a fill */
+  background: oklch(var(--tag-lch) / 0.12);   /* light wash, not a fill */
   color: oklch(var(--tag-lch));
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
-/* Hover firms up the same hue rather than introducing a second one. */
-.tag:hover {
+
+/* Every other tag in the sorted vocabulary sits in the alternate lightness
+   band (app.js adds this class), so two chips are never separated by hue
+   alone — see the token block at the top of this file for why that matters. */
+.tag--alt { --tag-lch: var(--tag-l-alt) var(--tag-c) var(--tag-hue); }
+
+/* Hover firms up the same hue rather than introducing a second one. The wash
+   stops at 0.14: past that the ink loses its AA margin against it. Selected
+   chips are excluded, or hovering the chip you just clicked would wash the
+   solid fill back out from under you. */
+.tag:hover:not([disabled]):not([aria-pressed="true"]) {
   border-color: oklch(var(--tag-lch));
   background: oklch(var(--tag-lch) / 0.14);
 }
@@ -345,6 +420,32 @@ a { color: inherit; }
   cursor: default;
   border-color: oklch(var(--tag-lch));
   background: oklch(var(--tag-lch) / 0.14);
+}
+
+/* The selected chip in the filter row inverts: the hue becomes the fill and
+   the page background becomes the ink, so "which topic am I in" is readable
+   across the room. Contrast is the ink-on-page figure in reverse — 6.0:1
+   light, 5.9:1 dark — so the inversion is safe for every hue. */
+.tag[aria-pressed="true"] {
+  border-color: oklch(var(--tag-lch));
+  background: oklch(var(--tag-lch));
+  color: var(--bg);
+}
+
+/* A topic the current search can't reach: still readable, clearly not
+   clickable. Kept in place rather than hidden so the row never reflows. */
+.tag[disabled] {
+  cursor: default;
+  opacity: 0.32;
+}
+
+/* Count of matching projects, riding along inside the chip. */
+.tag__count {
+  margin-left: 0.4em;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-weight: 700;
+  opacity: 0.7;
 }
 
 /* ---- Entry actions ---------------------------------------------------- */
@@ -418,6 +519,14 @@ a { color: inherit; }
   }
   .masthead__panel { width: 100%; }
   .grid { grid-template-columns: 1fr; }
+  /* The topic row needs the full width for its chips on a phone, so the
+     label moves above them instead of sitting alongside. */
+  .tagbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.7rem;
+  }
+  .tagbar__label { padding-top: 0; }
 }
 
 /* ---- Reduced motion --------------------------------------------------- */

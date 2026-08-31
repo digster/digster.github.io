@@ -13,7 +13,7 @@ Pages.
 ```
 index.html          → page structure (masthead + search + numbered entry grid)
 assets/style.css     → all styling & theming (light/dark via CSS custom properties)
-assets/app.js        → loads the data, renders entries, search + tag filter, theme toggle
+assets/app.js        → loads the data, renders entries + topic row, search + filtering, theme toggle
 data/sites.json      → the list of showcased sites — THE file you edit to add/remove
 .nojekyll            → tells GitHub Pages to serve files as-is (no Jekyll processing)
 ```
@@ -44,16 +44,25 @@ Open [`data/sites.json`](data/sites.json) and add an object to the array:
 | `description` | One sentence shown under the title.                               |
 | `url`         | The live site to link to (the **Visit site** action).            |
 | `repo`        | The GitHub repository (the **Source** action).                    |
-| `tags`        | Topics; each becomes a clickable `#tag` filter chip, in its own colour. |
+| `tags`        | Topics; each becomes a clickable `#tag` chip in its own colour, and joins the topic row above the catalog. |
 
 Entries are numbered automatically in array order (`01`, `02`, …), so adding an
 object is all it takes. Commit, push, and GitHub Pages redeploys.
 
-**Tag colours are automatic.** Every distinct tag gets a colour of its own —
-the hues are spread evenly around the colour wheel across whatever tag
-vocabulary `sites.json` contains, so two tags can never collide and adding a
-new one needs no CSS. Reuse an existing tag where it fits; a brand-new tag
-re-spaces the wheel and shifts the other colours slightly.
+**Tag colours are automatic.** Every distinct tag gets a colour of its own,
+derived from whatever tag vocabulary `sites.json` contains: the hues are
+spread evenly around the colour wheel, and every other tag also drops into a
+darker lightness band, so two neighbouring topics are never told apart by hue
+alone. Two tags can never collide and adding a new one needs no CSS. Reuse an
+existing tag where it fits; a brand-new tag re-spaces the wheel and shifts the
+other colours slightly.
+
+**Filtering.** The topic row above the catalog lists every tag once, with a
+count, so the filters are visible without hunting for a chip on some card.
+Click a topic to filter, click it again (or **All**) to clear — the chips on
+each entry do the same thing. Counts follow the search box, and a topic the
+current search can't reach is greyed out rather than removed, so the row never
+reflows under the cursor.
 
 **Title emoji:** every `title` ends with a single space and one emoji that hints
 at what the project *is* (`Renderbook 🔺`, `3D Physics From Scratch 🎱`) — pick a
@@ -80,9 +89,9 @@ python3 -m http.server 8000
 
 - 🗂️ Clean Swiss/editorial design — numbered catalog, hairline rules, one red accent
 - 🌗 Light/dark theme toggle (remembers your choice, respects your OS default)
-- 🔎 Live search + click-a-tag filtering, every tag in its own colour
+- 🔎 Live search + a clickable topic row with live counts, every tag in its own colour
 - ♿ Accessible (semantic HTML, keyboard-friendly, respects reduced motion, and
-  every tag colour clears WCAG AA contrast in both themes)
+  every tag colour clears WCAG AA contrast in both themes — measured, not assumed)
 - ⚡ Zero dependencies, zero build step, zero external requests
 
 ## License

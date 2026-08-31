@@ -40,11 +40,19 @@ palette or writing a browser test against it.
   contrast against it invents figures (a 5.0:1 chip read as 2.7:1). Fill the
   canvas with `getComputedStyle(document.body).backgroundColor` first.
 - **Wait for transitions before reading any colour.** `body` transitions
-  `background` over 0.3s and `.tag` transitions `background-color` over 0.15s,
-  so a reading taken straight after a click or a theme toggle is a
+  `background` over 0.3s and `.tag` transitions `color`/`background-color` over
+  0.15s, so a reading taken straight after a click or a theme toggle is a
   mid-animation interpolation — Chromium hands those back as `oklab(...)` with
   a fractional alpha, which is the tell. ~300ms after a chip click, ~600ms
   after the theme toggle.
+
+## CSS
+
+- **`:hover` can out-specify a state class.** `.tag:hover` (0,2,0 with its
+  `:not()`s) beat `.tag[aria-pressed="true"]` (0,2,0, declared earlier), so
+  hovering a selected chip washed its fill back out. State rules that must
+  survive hover need the hover rule to exclude them —
+  `.tag:hover:not([aria-pressed="true"])` — rather than relying on order.
 
 ## Local dev in this sandbox
 
@@ -52,8 +60,9 @@ palette or writing a browser test against it.
   returns `000`, which looks exactly like a dead server.
 - Playwright is installed globally: import it as
   `import pw from '/opt/node22/lib/node_modules/playwright/index.js'`.
-- Scope tag clicks to `#grid .tag[data-tag="…"]` — `#active-filter-tag` also
-  carries `class="tag"` and sits above `#grid`.
+- Scope tag clicks to `#grid .tag[data-tag="…"]` or `#tagbar-list
+  .tag[data-tag="…"]` — `#active-filter-tag` also carries `class="tag"`, and
+  the same tag now appears in both the topic row and on cards.
 - Count visible cards as `#grid .entry:not([hidden])`.
 - The masthead avatar (`avatars.githubusercontent.com`) is blocked here, so one
   `ERR_CONNECTION_RESET` console error is expected and is not a regression.

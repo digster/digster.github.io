@@ -115,3 +115,19 @@ table has to be kept in sync with the data; `style.css` supplies the shared
 OKLCH lightness/chroma per theme. Verified in Chromium: 13 distinct colours,
 worst-case contrast 5.2:1 light and 8.5:1 dark.
 
+
+---
+
+**2026-08-31**
+
+> * have a row of the tags before the list so that they can be clicked on and filtered
+> * the tag colors are too similar, make them a bit distinct
+
+Added a topic filter row above the catalog — every distinct tag once, with a
+live count that follows the search box, an **All** reset, and unreachable
+topics greyed out rather than removed. Made the palette measurably more
+distinct by giving each tag a lightness band as well as a hue (alternating
+around a wheel rounded up to an even number of slots, so the alternation
+closes) and by pulling chroma back inside sRGB, where every engine paints the
+same colour. Closest pair in Oklab: 0.043 → 0.077 light, 0.063 → 0.107 dark,
+with WCAG AA still clear at 5.0:1 and 5.2:1.

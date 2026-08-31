@@ -275,6 +275,55 @@ a { color: inherit; }
 }
 .clear-filter:hover { border-color: var(--accent); color: var(--accent); }
 
+/* ---- Topic filter row ------------------------------------------------- */
+/* A full vocabulary of clickable topics sitting above the catalog, so the
+   filters are discoverable without first spotting a chip on some card. Built
+   from the data by app.js, so it needs no maintenance when sites.json grows. */
+.tagbar {
+  display: flex;
+  align-items: baseline;
+  gap: 1.1rem;
+  margin: 0 0 1.6rem;
+  padding-top: 0.9rem;
+  border-top: 2px solid var(--rule);
+}
+
+.tagbar__label {
+  flex: 0 0 auto;
+  padding-top: 0.22rem;   /* optically align the caps with the chip text */
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  font-size: 0.72rem;
+  color: var(--text);
+}
+
+.tagbar__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The "All" reset chip is the one chip with no topic, so it stays monochrome
+   and inverts to the page's own ink when nothing is filtered. */
+.tag--all {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--text);
+}
+.tag--all:hover:not([disabled]):not([aria-pressed="true"]) {
+  border-color: var(--text);
+  background: transparent;
+}
+.tag--all[aria-pressed="true"] {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+}
+
 /* ---- Catalog grid ----------------------------------------------------- */
 .grid {
   display: grid;
@@ -348,7 +397,7 @@ a { color: inherit; }
   border-radius: 2px;
   background: oklch(var(--tag-lch) / 0.12);   /* light wash, not a fill */
   color: oklch(var(--tag-lch));
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 
 /* Every other tag in the sorted vocabulary sits in the alternate lightness
@@ -357,8 +406,10 @@ a { color: inherit; }
 .tag--alt { --tag-lch: var(--tag-l-alt) var(--tag-c) var(--tag-hue); }
 
 /* Hover firms up the same hue rather than introducing a second one. The wash
-   stops at 0.14: past that the ink loses its AA margin against it. */
-.tag:hover {
+   stops at 0.14: past that the ink loses its AA margin against it. Selected
+   chips are excluded, or hovering the chip you just clicked would wash the
+   solid fill back out from under you. */
+.tag:hover:not([disabled]):not([aria-pressed="true"]) {
   border-color: oklch(var(--tag-lch));
   background: oklch(var(--tag-lch) / 0.14);
 }
@@ -369,6 +420,32 @@ a { color: inherit; }
   cursor: default;
   border-color: oklch(var(--tag-lch));
   background: oklch(var(--tag-lch) / 0.14);
+}
+
+/* The selected chip in the filter row inverts: the hue becomes the fill and
+   the page background becomes the ink, so "which topic am I in" is readable
+   across the room. Contrast is the ink-on-page figure in reverse — 6.0:1
+   light, 5.9:1 dark — so the inversion is safe for every hue. */
+.tag[aria-pressed="true"] {
+  border-color: oklch(var(--tag-lch));
+  background: oklch(var(--tag-lch));
+  color: var(--bg);
+}
+
+/* A topic the current search can't reach: still readable, clearly not
+   clickable. Kept in place rather than hidden so the row never reflows. */
+.tag[disabled] {
+  cursor: default;
+  opacity: 0.32;
+}
+
+/* Count of matching projects, riding along inside the chip. */
+.tag__count {
+  margin-left: 0.4em;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-weight: 700;
+  opacity: 0.7;
 }
 
 /* ---- Entry actions ---------------------------------------------------- */
@@ -442,6 +519,14 @@ a { color: inherit; }
   }
   .masthead__panel { width: 100%; }
   .grid { grid-template-columns: 1fr; }
+  /* The topic row needs the full width for its chips on a phone, so the
+     label moves above them instead of sitting alongside. */
+  .tagbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.7rem;
+  }
+  .tagbar__label { padding-top: 0; }
 }
 
 /* ---- Reduced motion --------------------------------------------------- */

@@ -17,8 +17,8 @@ deploys instant and the project approachable.
                 data/sites.json  (source of truth)
                         │  fetch() at runtime
                         ▼
-index.html ──loads──▶ assets/app.js ──renders──▶ <section id="grid"> cards
-     │                     │
+index.html ──loads──▶ assets/app.js ──renders──▶ <nav class="tagbar"> chips
+     │                     │           └────────────▶ <section id="grid"> cards
      │ links              │ reads/writes
      ▼                     ▼
 assets/style.css     localStorage["theme"]  (persisted light/dark)
@@ -26,14 +26,15 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
 
 1. **`index.html`** — semantic shell: a `<header class="masthead">` (wordmark +
    avatar, theme toggle, "Project Index" label and search), an empty
-   `<section id="grid">` that JS fills, and a footer. It also contains a tiny
-   **inline no-flash theme script** in `<head>` that sets `data-theme` on
-   `<html>` before first paint.
+   `<nav class="tagbar">` and `<section id="grid">` that JS fills, and a
+   footer. It also contains a tiny **inline no-flash theme script** in
+   `<head>` that sets `data-theme` on `<html>` before first paint.
 2. **`data/sites.json`** — an array of site objects
    (`name`, `title`, `description`, `url`, `repo`, `tags`). This is the only file
    you edit to change what the gallery shows.
-3. **`assets/app.js`** — fetches the JSON, builds one card DOM node per entry,
-   and wires up interactivity. It is an IIFE, no globals leak.
+3. **`assets/app.js`** — fetches the JSON, derives the tag vocabulary and its
+   colours, builds one card DOM node per entry plus the topic filter row, and
+   wires up interactivity. It is an IIFE, no globals leak.
 4. **`assets/style.css`** — all presentation. Theming is done entirely with CSS
    custom properties; `[data-theme="dark"]` overrides the token values.
 
@@ -42,19 +43,21 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
 - **One accent everywhere, one hue per tag.** The design is monochrome (black
   ink on white, inverted for dark) with a single red `--accent`. Tag chips are
   the one deliberate exception: **every distinct tag renders in its own
-  colour**, so a topic is recognisable before it is read. There is still no
+  colour**, so a topic is recognisable before it is read; the topic row above
+  the catalog shows that palette in one place. There is still no
   per-*card* hue logic — a card takes its colour only from the chips it
   happens to carry. To restyle, edit the tokens on `:root` /
   `[data-theme="dark"]` in `style.css`.
-- **Tag colours are derived, never listed.** `buildTagColors()` in `app.js`
-  collects the distinct tags across `sites.json`, sorts them, and derives a
-  colour per tag over that set. Two things follow, and both are the reason it
-  is done this way rather than with a tag→colour table: **collisions are
-  impossible** (one tag per slot), and the palette re-spaces itself when the
-  vocabulary changes, so adding a tag to the data needs no code edit. The
-  trade is that colours shift when a *new* tag appears — the vocabulary, not
-  the individual tag, is what fixes a hue. Sorting keeps it deterministic: the
-  same tag set always yields the same colours.
+- **Tag colours are derived, never listed.** `buildVocabulary()` and
+  `buildTagColors()` in `app.js` collect the distinct tags across
+  `sites.json`, sort them, and derive a colour per tag over that set. Two
+  things follow, and both are the reason it is done this way rather than with
+  a tag→colour table: **collisions are impossible** (one tag per slot), and
+  the palette re-spaces itself when the vocabulary changes, so adding a tag to
+  the data needs no code edit. The trade is that colours shift when a *new*
+  tag appears — the vocabulary, not the individual tag, is what fixes a hue.
+  Sorting keeps it deterministic: the same tag set always yields the same
+  colours.
 - **Two dimensions, because one is not enough.** Each tag gets a hue *and* a
   lightness band: even indices render at `--tag-l`, odd ones at
   `--tag-l-alt` (`app.js` adds `.tag--alt`). Hue alone was the original
@@ -66,7 +69,7 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
   it is free in contrast terms because the alternate band moves away from the
   page background. Measured after the change: **0.077 light, 0.107 dark**.
 - **The hue wheel has an even number of slots.** `buildTagColors()` divides
-  360° by the vocabulary size **rounded up to even**, leaving the spare slot
+  360° by `vocabulary.length` **rounded up to even**, leaving the spare slot
   empty when the count is odd. Without that the alternation cannot close: with
   13 tags in 13 slots the first and last tag are hue-neighbours *in the same
   band*, and that pair was the closest in the whole palette. The empty slot
@@ -88,6 +91,13 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
   chip's own washed background: worst 5.0:1 light, 5.2:1 dark, both past WCAG
   AA). Keep new chip styling inside `oklch(var(--tag-lch) …)` so the ink,
   border and background wash can't drift apart.
+- **The topic row is a view of the vocabulary, not a second source of it.**
+  `renderTagbar()` builds the row above the catalog from the same sorted
+  vocabulary the colours come from, so it doubles as the palette's legend and
+  needs no maintenance when `sites.json` grows. Its counts are recomputed in
+  `applyFilters()` from the *search text only* — deliberately ignoring the
+  active tag, since a row that counted its own selection would zero out every
+  other topic the moment you picked one.
 - **Titles carry their emoji in the data.** Each `title` in `sites.json` ends
   with one representative emoji; `createCard()` just sets it as `textContent`,
   so there is no icon field, no icon markup and no icon CSS. Distinguishing

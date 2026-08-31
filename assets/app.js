@@ -3,7 +3,8 @@
    Responsibilities:
      1. Load the showcased sites from data/sites.json (single source of truth).
      2. Render a numbered catalog entry per site.
-     3. Live text search + click-to-filter tag chips, one colour per tag.
+     3. Live text search + click-to-filter tag chips (on each card and in the
+        topic row above the catalog), every distinct tag in its own colour.
      4. Persisted light/dark theme toggle.
    Vanilla JS, no dependencies, no build step.
    ========================================================================= */
@@ -17,6 +18,7 @@
   const activeFilter = document.getElementById("active-filter");
   const activeFilterTag = document.getElementById("active-filter-tag");
   const clearFilterBtn = document.getElementById("clear-filter");
+  const tagbarList = document.getElementById("tagbar-list");
   const themeToggle = document.getElementById("theme-toggle");
   const indexCount = document.getElementById("index-count");
 
@@ -28,6 +30,7 @@
   // Rotating the wheel off 0deg keeps the first tag clear of the editorial
   // red used by the accent, so a chip is never mistaken for a link.
   const HUE_OFFSET = 15;
+  let vocabulary = [];       // sorted distinct tags, rebuilt on every load
   let tagColors = new Map(); // tag -> { hue, alt }, rebuilt on every load
 
   /* ---- Small helpers -------------------------------------------------- */
@@ -67,20 +70,22 @@
      table to keep in sync with the data. Sorting the vocabulary keeps that
      deterministic — a given set of tags always produces the same colours.
      ===================================================================== */
-  function buildTagColors(sites) {
-    const vocabulary = [];
+  function buildVocabulary(sites) {
+    const tags = [];
     sites.forEach(function (site) {
       (site.tags || []).forEach(function (tag) {
-        if (vocabulary.indexOf(tag) === -1) vocabulary.push(tag);
+        if (tags.indexOf(tag) === -1) tags.push(tag);
       });
     });
-    vocabulary.sort();
+    return tags.sort();
+  }
 
+  function buildTagColors(vocab) {
     const colors = new Map();
     // Round the slot count up to even so the light/dark alternation wraps.
-    const slots = vocabulary.length + (vocabulary.length % 2);
+    const slots = vocab.length + (vocab.length % 2);
     const step = 360 / slots;
-    vocabulary.forEach(function (tag, i) {
+    vocab.forEach(function (tag, i) {
       colors.set(tag, {
         // One decimal is plenty of precision and keeps the inline style short.
         hue: Math.round((HUE_OFFSET + i * step) * 10) % 3600 / 10,
@@ -175,8 +180,10 @@
   }
 
   function render(sites) {
-    // Derive the colours before any chip is built — createCard() reads them.
-    tagColors = buildTagColors(sites);
+    // Derive the vocabulary and its colours before any chip is built — both
+    // createCard() and renderTagbar() read them.
+    vocabulary = buildVocabulary(sites);
+    tagColors = buildTagColors(vocabulary);
 
     const fragment = document.createDocumentFragment();
     sites.forEach(function (site, i) { fragment.appendChild(createCard(site, i + 1)); });
@@ -184,8 +191,79 @@
     grid.appendChild(fragment);
     grid.setAttribute("aria-busy", "false");
 
+    renderTagbar();
+
     // Reflect the catalog size in the "Project Index / NN" label.
     if (indexCount) indexCount.textContent = "/ " + pad2(sites.length);
+  }
+
+  /* =====================================================================
+     Topic filter row — the whole tag vocabulary, above the catalog.
+
+     The per-card chips only ever show the topics of the cards you can
+     already see, so the set of filters was previously undiscoverable: you
+     had to spot a chip before you could use it. This row lists every topic
+     once, in the same sorted order the colours are derived from, which
+     doubles as a legend for the palette.
+
+     Counts follow the search box rather than the catalog total, so the row
+     always answers "what would this filter actually give me right now" — and
+     a topic the current search cannot reach is disabled rather than removed,
+     so the row never reflows under the cursor.
+     ===================================================================== */
+  let tagbarChips = [];   // [{ tag, button, count }], tag === null for "All"
+
+  function createFilterChip(tag) {
+    const li = document.createElement("li");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = tag === null ? "tag tag--all" : "tag";
+    if (tag !== null) {
+      button.dataset.tag = tag;
+      paintTag(button, tag);
+    }
+
+    button.appendChild(document.createTextNode(tag === null ? "All" : "#" + tag));
+    const count = document.createElement("span");
+    count.className = "tag__count";
+    button.appendChild(count);
+
+    button.addEventListener("click", function () {
+      if (tag === null) clearTag();
+      else toggleTag(tag);
+    });
+
+    li.appendChild(button);
+    tagbarList.appendChild(li);
+    return { tag: tag, button: button, count: count };
+  }
+
+  function renderTagbar() {
+    if (!tagbarList) return;
+    tagbarList.innerHTML = "";
+    tagbarChips = [createFilterChip(null)].concat(
+      vocabulary.map(function (tag) { return createFilterChip(tag); })
+    );
+  }
+
+  // Refresh every chip against the counts of the current search.
+  function syncTagbar(counts, total) {
+    tagbarChips.forEach(function (chip) {
+      const isAll = chip.tag === null;
+      const n = isAll ? total : (counts.get(chip.tag) || 0);
+      const pressed = isAll ? activeTag === null : activeTag === chip.tag;
+
+      chip.count.textContent = String(n);
+      chip.button.setAttribute("aria-pressed", String(pressed));
+      // Never disable the chip that is currently on, or the filter would
+      // become impossible to switch off from the row.
+      chip.button.disabled = n === 0 && !pressed;
+      chip.button.setAttribute(
+        "aria-label",
+        (isAll ? "Show all projects" : "Filter by " + chip.tag) +
+          " (" + n + (n === 1 ? " project)" : " projects)")
+      );
+    });
   }
 
   /* =====================================================================
@@ -193,11 +271,24 @@
      ===================================================================== */
   function applyFilters() {
     const entries = grid.querySelectorAll(".entry");
+    const textCounts = new Map();   // tag -> entries the search text alone keeps
+    let textMatches = 0;
     let visible = 0;
 
     entries.forEach(function (entry) {
       const matchesText = !query || entry.dataset.search.includes(query);
       const entryTags = entry.dataset.tags ? entry.dataset.tags.split(",") : [];
+
+      // Tally the topics of everything the *text* matches. Deliberately
+      // ignores the active tag: a filter row that counted its own selection
+      // would zero out every other topic the moment you picked one.
+      if (matchesText) {
+        textMatches++;
+        entryTags.forEach(function (tag) {
+          textCounts.set(tag, (textCounts.get(tag) || 0) + 1);
+        });
+      }
+
       const matchesTag = !activeTag || entryTags.indexOf(activeTag) !== -1;
       const show = matchesText && matchesTag;
       entry.hidden = !show;
@@ -205,6 +296,7 @@
     });
 
     emptyState.hidden = visible !== 0;
+    syncTagbar(textCounts, textMatches);
 
     // Reflect the active tag banner.
     if (activeTag) {
@@ -218,6 +310,11 @@
 
   function toggleTag(tag) {
     activeTag = activeTag === tag ? null : tag;
+    applyFilters();
+  }
+
+  function clearTag() {
+    activeTag = null;
     applyFilters();
   }
 
@@ -250,10 +347,7 @@
       query = searchInput.value.trim().toLowerCase();
       applyFilters();
     });
-    clearFilterBtn.addEventListener("click", function () {
-      activeTag = null;
-      applyFilters();
-    });
+    clearFilterBtn.addEventListener("click", clearTag);
   }
 
   function showLoadError() {

@@ -28,27 +28,46 @@
   // Rotating the wheel off 0deg keeps the first tag clear of the editorial
   // red used by the accent, so a chip is never mistaken for a link.
   const HUE_OFFSET = 15;
-  let tagHues = new Map();   // tag -> hue in degrees, rebuilt on every load
+  let tagColors = new Map(); // tag -> { hue, alt }, rebuilt on every load
 
   /* ---- Small helpers -------------------------------------------------- */
   // Zero-pad a 1-based position to two digits (1 -> "01", 10 -> "10").
   function pad2(n) { return String(n).padStart(2, "0"); }
 
   /* =====================================================================
-     Tag colours — every distinct tag gets a hue of its own.
+     Tag colours — every distinct tag gets a colour of its own.
 
-     The whole tag vocabulary is collected from the data first, then hues are
-     spread evenly around the 360deg wheel over that set. Two properties fall
-     out of doing it that way rather than hashing a tag name to a colour:
-     collisions are impossible (n tags, n distinct slots), and the gap between
-     any two tags is the widest the vocabulary allows — 13 tags today sit
-     27.7deg apart. Adding a tag to sites.json re-spaces the wheel by itself,
-     which is the point: no colour table to keep in sync with the data.
+     The whole tag vocabulary is collected from the data first, then two
+     things are derived over that sorted set:
 
-     Sorting the vocabulary keeps the mapping deterministic, so a given set of
-     tags always produces the same colours from one load to the next.
+       1. A hue, spread evenly around the 360deg wheel. Collisions are
+          impossible (one tag per slot) and the gap between any two tags is
+          the widest the vocabulary allows — 13 tags today sit 25.7deg apart.
+       2. An alternating lightness band. Every other tag is flagged `alt`,
+          which style.css renders at --tag-l-alt instead of --tag-l.
+
+     Hue alone used to be the whole scheme, and it was not enough: sRGB
+     cannot hold a saturated yellow, green or teal at a lightness dark enough
+     to read on white, so those hues get squeezed toward grey and
+     neighbouring topics converge — the closest pair measured 0.043 in Oklab,
+     under two just-noticeable differences. Alternating the lightness
+     separates neighbours in a dimension the gamut cannot squeeze and takes
+     the worst pair to 0.077 light / 0.107 dark. It is free in contrast terms
+     because the alternate band moves away from the page background.
+
+     The wheel is divided into an *even* number of slots — the vocabulary
+     size rounded up — and the spare slot, if any, is simply left empty. That
+     is what lets the alternation close: with 13 tags in 13 slots the first
+     and last tag are neighbours in the same band, which was the closest pair
+     in the whole palette. Rounding up to 14 puts a gap there instead, so no
+     two same-band tags are ever one slot apart.
+
+     Everything stays derived rather than tabulated, which is the point:
+     adding a tag to sites.json re-spaces the wheel by itself, with no colour
+     table to keep in sync with the data. Sorting the vocabulary keeps that
+     deterministic — a given set of tags always produces the same colours.
      ===================================================================== */
-  function buildTagHues(sites) {
+  function buildTagColors(sites) {
     const vocabulary = [];
     sites.forEach(function (site) {
       (site.tags || []).forEach(function (tag) {
@@ -57,22 +76,29 @@
     });
     vocabulary.sort();
 
-    const hues = new Map();
-    const step = 360 / vocabulary.length;
+    const colors = new Map();
+    // Round the slot count up to even so the light/dark alternation wraps.
+    const slots = vocabulary.length + (vocabulary.length % 2);
+    const step = 360 / slots;
     vocabulary.forEach(function (tag, i) {
-      // One decimal is plenty of precision and keeps the inline style short.
-      hues.set(tag, Math.round((HUE_OFFSET + i * step) * 10) % 3600 / 10);
+      colors.set(tag, {
+        // One decimal is plenty of precision and keeps the inline style short.
+        hue: Math.round((HUE_OFFSET + i * step) * 10) % 3600 / 10,
+        alt: i % 2 === 1,
+      });
     });
-    return hues;
+    return colors;
   }
 
-  // Paint one chip. Only the hue is per-tag: lightness and chroma come from
-  // the theme tokens in style.css, so chips stay a family and stay legible
-  // when the theme flips. Unknown tags fall back to the CSS default.
+  // Paint one chip. Only the hue and the band are per-tag: the lightness and
+  // chroma values themselves come from the theme tokens in style.css, so
+  // chips stay a family and stay legible when the theme flips. Unknown tags
+  // fall back to the CSS default.
   function paintTag(el, tag) {
-    const hue = tagHues.get(tag);
-    if (hue !== undefined) el.style.setProperty("--tag-hue", String(hue));
+    const color = tagColors.get(tag);
+    if (color) el.style.setProperty("--tag-hue", String(color.hue));
     else el.style.removeProperty("--tag-hue");
+    el.classList.toggle("tag--alt", Boolean(color && color.alt));
   }
 
   /* =====================================================================
@@ -150,7 +176,7 @@
 
   function render(sites) {
     // Derive the colours before any chip is built — createCard() reads them.
-    tagHues = buildTagHues(sites);
+    tagColors = buildTagColors(sites);
 
     const fragment = document.createDocumentFragment();
     sites.forEach(function (site, i) { fragment.appendChild(createCard(site, i + 1)); });

@@ -49,11 +49,13 @@ Open [`data/sites.json`](data/sites.json) and add an object to the array:
 Entries are numbered automatically in array order (`01`, `02`, …), so adding an
 object is all it takes. Commit, push, and GitHub Pages redeploys.
 
-**Tag colours are automatic.** Every distinct tag gets a colour of its own —
-the hues are spread evenly around the colour wheel across whatever tag
-vocabulary `sites.json` contains, so two tags can never collide and adding a
-new one needs no CSS. Reuse an existing tag where it fits; a brand-new tag
-re-spaces the wheel and shifts the other colours slightly.
+**Tag colours are automatic.** Every distinct tag gets a colour of its own,
+derived from whatever tag vocabulary `sites.json` contains: the hues are
+spread evenly around the colour wheel, and every other tag also drops into a
+darker lightness band, so two neighbouring topics are never told apart by hue
+alone. Two tags can never collide and adding a new one needs no CSS. Reuse an
+existing tag where it fits; a brand-new tag re-spaces the wheel and shifts the
+other colours slightly.
 
 **Title emoji:** every `title` ends with a single space and one emoji that hints
 at what the project *is* (`Renderbook 🔺`, `3D Physics From Scratch 🎱`) — pick a
@@ -82,7 +84,7 @@ python3 -m http.server 8000
 - 🌗 Light/dark theme toggle (remembers your choice, respects your OS default)
 - 🔎 Live search + click-a-tag filtering, every tag in its own colour
 - ♿ Accessible (semantic HTML, keyboard-friendly, respects reduced motion, and
-  every tag colour clears WCAG AA contrast in both themes)
+  every tag colour clears WCAG AA contrast in both themes — measured, not assumed)
 - ⚡ Zero dependencies, zero build step, zero external requests
 
 ## License

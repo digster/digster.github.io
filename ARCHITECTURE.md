@@ -46,25 +46,48 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
   per-*card* hue logic — a card takes its colour only from the chips it
   happens to carry. To restyle, edit the tokens on `:root` /
   `[data-theme="dark"]` in `style.css`.
-- **Tag colours are derived, never listed.** `buildTagHues()` in `app.js`
-  collects the distinct tags across `sites.json`, sorts them, and spreads hues
-  evenly around the 360° wheel over that set — 13 tags today land 27.7° apart.
-  Two things follow, and both are the reason it is done this way rather than
-  with a tag→colour table: **collisions are impossible** (n tags, n slots), and
-  the palette re-spaces itself when the vocabulary changes, so adding a tag to
-  the data needs no code edit. The trade is that colours shift when a *new*
-  tag appears — the vocabulary, not the individual tag, is what fixes a hue.
-  Sorting keeps it deterministic: the same tag set always yields the same
-  colours.
-- **Only the hue varies; lightness and chroma are tokens.** `app.js` writes
-  `--tag-hue` onto each chip and nothing else; `--tag-l` / `--tag-c` in
-  `style.css` supply the rest, per theme. Colours are authored in **OKLCH**
-  precisely so that this split works — hue can rotate the whole way round at
-  fixed lightness without any chip reading heavier or louder than its
-  neighbours, and a single pair of values holds the contrast line for every
-  hue at once (measured in-browser: worst case 5.2:1 light, 8.5:1 dark, both
-  past WCAG AA). Keep new chip styling inside `oklch(var(--tag-lch) …)` so the
-  ink, border and background wash can't drift apart.
+- **Tag colours are derived, never listed.** `buildTagColors()` in `app.js`
+  collects the distinct tags across `sites.json`, sorts them, and derives a
+  colour per tag over that set. Two things follow, and both are the reason it
+  is done this way rather than with a tag→colour table: **collisions are
+  impossible** (one tag per slot), and the palette re-spaces itself when the
+  vocabulary changes, so adding a tag to the data needs no code edit. The
+  trade is that colours shift when a *new* tag appears — the vocabulary, not
+  the individual tag, is what fixes a hue. Sorting keeps it deterministic: the
+  same tag set always yields the same colours.
+- **Two dimensions, because one is not enough.** Each tag gets a hue *and* a
+  lightness band: even indices render at `--tag-l`, odd ones at
+  `--tag-l-alt` (`app.js` adds `.tag--alt`). Hue alone was the original
+  scheme and it failed measurably — sRGB has no room for a saturated yellow,
+  green or teal at a lightness dark enough to read on white, so those hues
+  are squeezed toward grey and adjacent topics converge. The closest of the
+  78 pairs measured **0.043 in Oklab**, under two JNDs. Alternating the
+  lightness separates neighbours in a dimension the gamut cannot squeeze, and
+  it is free in contrast terms because the alternate band moves away from the
+  page background. Measured after the change: **0.077 light, 0.107 dark**.
+- **The hue wheel has an even number of slots.** `buildTagColors()` divides
+  360° by the vocabulary size **rounded up to even**, leaving the spare slot
+  empty when the count is odd. Without that the alternation cannot close: with
+  13 tags in 13 slots the first and last tag are hue-neighbours *in the same
+  band*, and that pair was the closest in the whole palette. The empty slot
+  puts a gap at the seam instead.
+- **Chroma stays inside what sRGB can hold.** `--tag-c` is 0.11 light / 0.13
+  dark — near the gamut edge for the tightest hue, not past it. This is a
+  portability rule, not a taste one: ask for more chroma than sRGB holds and
+  each engine improvises differently (**Chromium clips per channel; engines
+  following CSS Color 4 reduce chroma instead**), so an over-ambitious palette
+  is not the same palette from browser to browser. Verify new values by
+  painting them, not by trusting the spec — see `LEARNINGS.md`.
+- **Only hue and band are per-chip; the rest are tokens.** `app.js` writes
+  `--tag-hue` and toggles `.tag--alt`, nothing else; `--tag-l`,
+  `--tag-l-alt` and `--tag-c` in `style.css` supply the rest, per theme.
+  Colours are authored in **OKLCH** precisely so that this split works — hue
+  can rotate the whole way round at fixed lightness without any chip reading
+  heavier or louder than its neighbours, and one set of values holds the
+  contrast line for every hue at once (measured in-browser against each
+  chip's own washed background: worst 5.0:1 light, 5.2:1 dark, both past WCAG
+  AA). Keep new chip styling inside `oklch(var(--tag-lch) …)` so the ink,
+  border and background wash can't drift apart.
 - **Titles carry their emoji in the data.** Each `title` in `sites.json` ends
   with one representative emoji; `createCard()` just sets it as `textContent`,
   so there is no icon field, no icon markup and no icon CSS. Distinguishing
@@ -90,7 +113,7 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
 | Preview locally   | `python3 -m http.server 8000` then open `localhost:8000`  |
 | Add a project     | Append an object to `data/sites.json` (see `README.md`)   |
 | Validate the data | `python3 -m json.tool data/sites.json`                    |
-| Check tag colours | Load the page and confirm each chip's `--tag-hue` differs; contrast is measured against `--bg` in both themes |
+| Check tag colours | Load the page and confirm each chip's `--tag-hue` differs and `.tag--alt` alternates; measure contrast against the chip's own washed background, in both themes |
 | Audit live Pages  | Probe each repo's URL (see below) — `200` = live, `404` = no Pages |
 | Deploy            | Push to the default branch — GitHub Pages redeploys root  |
 

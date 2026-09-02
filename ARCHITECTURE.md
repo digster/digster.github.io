@@ -40,57 +40,67 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
 
 ## Key conventions (project-specific)
 
-- **One accent everywhere, one hue per tag.** The design is monochrome (black
-  ink on white, inverted for dark) with a single red `--accent`. Tag chips are
-  the one deliberate exception: **every distinct tag renders in its own
-  colour**, so a topic is recognisable before it is read; the topic row above
-  the catalog shows that palette in one place. There is still no
-  per-*card* hue logic — a card takes its colour only from the chips it
+- **One accent everywhere, one colour per tag.** The design is monochrome
+  (black ink on white, inverted for dark) with a single red `--accent`. Tag
+  chips are the one deliberate exception: **every distinct tag renders in its
+  own colour**, so a topic is recognisable before it is read; the topic row
+  above the catalog shows that palette in one place. There is still no
+  per-*card* colour logic — a card takes its colour only from the chips it
   happens to carry. To restyle, edit the tokens on `:root` /
   `[data-theme="dark"]` in `style.css`.
-- **Tag colours are derived, never listed.** `buildVocabulary()` and
-  `buildTagColors()` in `app.js` collect the distinct tags across
-  `sites.json`, sort them, and derive a colour per tag over that set. Two
-  things follow, and both are the reason it is done this way rather than with
-  a tag→colour table: **collisions are impossible** (one tag per slot), and
-  the palette re-spaces itself when the vocabulary changes, so adding a tag to
-  the data needs no code edit. The trade is that colours shift when a *new*
-  tag appears — the vocabulary, not the individual tag, is what fixes a hue.
+- **A chip is a filled block, not coloured text.** This is what gives the
+  palette its range, so it is a structural decision rather than a stylistic
+  one. While the colour was the *ink*, every hue had to stay dark enough to
+  read on white, which confines the whole set to a thin, muted shell of the
+  gamut — and a third of the wheel (yellow, green, teal) collapses toward grey
+  in that shell no matter how the hues are spaced. Colour the block and
+  reverse the label out of it, and the only rule left is that one of the
+  page's two inks reads on the fill, which opens the deep, mid and pale ends
+  of the gamut at once. It also multiplies the *area* carrying the colour,
+  which is half of why two chips read as different at a glance.
+- **Tag colours are solved, never listed.** `buildTagColors()` in `app.js`
+  takes the sorted vocabulary and solves a max-min problem in Oklab: build a
+  grid of candidate fills (lightness × hue, each at the most chroma sRGB holds
+  there, capped so nothing goes neon), keep the ones where a label reaches AA
+  and the block is visibly not the page, then pick n of them so that the
+  *smallest* perceptual gap in the set is as large as possible — farthest-point
+  seeding followed by swap refinement. Measured in Chromium off painted
+  pixels: **closest pair 0.157 light / 0.159 dark in Oklab** (the previous
+  hue-wheel scheme managed 0.077 / 0.107). No tag→colour table exists:
+  collisions are impossible, and adding a tag to `sites.json` re-solves the
+  palette with no code edit. The trade is unchanged — a *new* tag re-colours
+  the set, because the vocabulary fixes the colours, not the individual tag.
   Sorting keeps it deterministic: the same tag set always yields the same
   colours.
-- **Two dimensions, because one is not enough.** Each tag gets a hue *and* a
-  lightness band: even indices render at `--tag-l`, odd ones at
-  `--tag-l-alt` (`app.js` adds `.tag--alt`). Hue alone was the original
-  scheme and it failed measurably — sRGB has no room for a saturated yellow,
-  green or teal at a lightness dark enough to read on white, so those hues
-  are squeezed toward grey and adjacent topics converge. The closest of the
-  78 pairs measured **0.043 in Oklab**, under two JNDs. Alternating the
-  lightness separates neighbours in a dimension the gamut cannot squeeze, and
-  it is free in contrast terms because the alternate band moves away from the
-  page background. Measured after the change: **0.077 light, 0.107 dark**.
-- **The hue wheel has an even number of slots.** `buildTagColors()` divides
-  360° by `vocabulary.length` **rounded up to even**, leaving the spare slot
-  empty when the count is odd. Without that the alternation cannot close: with
-  13 tags in 13 slots the first and last tag are hue-neighbours *in the same
-  band*, and that pair was the closest in the whole palette. The empty slot
-  puts a gap at the seam instead.
-- **Chroma stays inside what sRGB can hold.** `--tag-c` is 0.11 light / 0.13
-  dark — near the gamut edge for the tightest hue, not past it. This is a
-  portability rule, not a taste one: ask for more chroma than sRGB holds and
-  each engine improvises differently (**Chromium clips per channel; engines
-  following CSS Color 4 reduce chroma instead**), so an over-ambitious palette
-  is not the same palette from browser to browser. Verify new values by
-  painting them, not by trusting the spec — see `LEARNINGS.md`.
-- **Only hue and band are per-chip; the rest are tokens.** `app.js` writes
-  `--tag-hue` and toggles `.tag--alt`, nothing else; `--tag-l`,
-  `--tag-l-alt` and `--tag-c` in `style.css` supply the rest, per theme.
-  Colours are authored in **OKLCH** precisely so that this split works — hue
-  can rotate the whole way round at fixed lightness without any chip reading
-  heavier or louder than its neighbours, and one set of values holds the
-  contrast line for every hue at once (measured in-browser against each
-  chip's own washed background: worst 5.0:1 light, 5.2:1 dark, both past WCAG
-  AA). Keep new chip styling inside `oklch(var(--tag-lch) …)` so the ink,
-  border and background wash can't drift apart.
+- **Consecutive topics are ordered apart, too.** `spreadOrder()` re-orders the
+  solved set so each colour is as far as possible from the one before it. The
+  vocabulary is alphabetical, so without this the row is read in whatever
+  order the search happened to produce — and a run of neighbouring hues reads
+  as one gradient even when its members measure far apart.
+- **Colours are emitted as hex, computed in JS — never as CSS `oklch()`.**
+  The palette is *decided* in Oklab (distance there is perceptual distance,
+  which is the quantity being maximised) and *shipped* as sRGB hex. That is a
+  portability rule: an `oklch()` outside sRGB is clipped per channel by
+  Chromium and gamut-mapped per CSS Color 4 by other engines, so one
+  declaration paints two different colours depending on the browser. Doing the
+  gamut mapping once, in `oklchToHex()`, makes the palette identical
+  everywhere and measurable in a canvas. See `LEARNINGS.md`.
+- **Both themes are painted onto the chip; CSS picks one.** `paintTag()`
+  writes `--tag-light-fill`/`--tag-light-ink` and `--tag-dark-fill`/`--tag-dark-ink`,
+  and the `.tag` / `[data-theme="dark"] .tag` rules alias one pair to
+  `--tag-fill`/`--tag-ink`. The theme toggle therefore never repaints a chip.
+  The dark twin of a fill keeps its hue and its share of the local chroma
+  ceiling and only moves in lightness (band 0.40–0.75 → 0.46–0.78), so a topic
+  stays recognisably itself across the flip; `darkTwin()` nudges the lightness
+  if the mapped value lands in the crossover where neither ink reaches AA.
+  `THEMES` in `app.js` carries its own copy of each theme's paper and ink —
+  keep it in sync with `--bg`/`--text` in `style.css`.
+- **The selected chip rings rather than inverts.** The fills are already
+  solid, so there is nothing left to invert into: `[aria-pressed="true"]`
+  draws a ring in the page's ink with a gap in the page's paper, which reads
+  on every fill. `All` is the exception — no topic, no colour, so it inverts —
+  and it is excluded from the ring *by name*, because the ring rule sits later
+  in the file and would otherwise win.
 - **The topic row is a view of the vocabulary, not a second source of it.**
   `renderTagbar()` builds the row above the catalog from the same sorted
   vocabulary the colours come from, so it doubles as the palette's legend and
@@ -123,7 +133,7 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
 | Preview locally   | `python3 -m http.server 8000` then open `localhost:8000`  |
 | Add a project     | Append an object to `data/sites.json` (see `README.md`)   |
 | Validate the data | `python3 -m json.tool data/sites.json`                    |
-| Check tag colours | Load the page and confirm each chip's `--tag-hue` differs and `.tag--alt` alternates; measure contrast against the chip's own washed background, in both themes |
+| Check tag colours | Paint each chip's computed fill into a 1×1 canvas and read the pixels back (never parse the string); assert distinct fills, the closest Oklab pair, and each label's contrast against its own fill, in both themes |
 | Audit live Pages  | Probe each repo's URL (see below) — `200` = live, `404` = no Pages |
 | Deploy            | Push to the default branch — GitHub Pages redeploys root  |
 

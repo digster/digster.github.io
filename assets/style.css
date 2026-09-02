@@ -16,28 +16,18 @@
   --line: #d9d9d9;      /* soft hairlines: tag chips, minor dividers */
   --accent: #e5241d;    /* the one editorial red */
 
-  /* Tag chips are the one place that carries per-topic colour. app.js gives
-     each distinct tag its own hue (--tag-hue) and drops every other tag into
-     the alternate lightness band (--tag-l-alt, applied as .tag--alt), so two
-     chips are told apart in two dimensions rather than one.
+  /* Tag chips are the one place that carries per-topic colour, and they
+     carry it as a filled block with the label reversed out of it rather than
+     as coloured text on white. That is what buys the palette its range: an
+     ink has to stay dark enough to read on paper, which squeezes every hue
+     into one muted band, while a block only has to let one of the two inks
+     below read on top of it. app.js solves for the colours themselves (see
+     the palette section there) and writes both themes' values onto each
+     chip; the rules further down pick between them.
 
-     Hue alone is not enough down here: sRGB has no room for a saturated
-     yellow, green or teal at a lightness dark enough to read on white, so
-     those hues get squeezed toward grey and neighbouring topics converge.
-     Staggering the lightness separates them in a dimension the gamut cannot
-     squeeze, and it is free in contrast terms because the alternate band is
-     the darker one on white. Measured in Chromium: the closest pair of the
-     thirteen goes from 0.043 to 0.077 in Oklab — under two just-noticeable
-     differences to over three.
-
-     Chroma stays modest on purpose. Ask for more than sRGB holds and every
-     engine improvises differently (Chromium clips per channel, others reduce
-     chroma per the spec), so the palette would stop being the same palette
-     from browser to browser. 0.11 keeps all thirteen hues at or near the
-     gamut edge. Worst chip: 5.0:1 against its own washed background. */
-  --tag-l: 0.48;        /* perceptual lightness of a chip's ink */
-  --tag-l-alt: 0.40;    /* alternate band: every other tag around the wheel */
-  --tag-c: 0.11;        /* chroma: as much as sRGB holds at these lightnesses */
+     app.js needs this theme's paper and ink to choose a legible label, so
+     it carries its own copies of --bg and --text (THEMES in that file).
+     Change either colour here and change it there. */
 
   /* Monospaced figures for the catalog index numbers. */
   --font-mono: ui-monospace, "SF Mono", "SFMono-Regular", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
@@ -56,15 +46,10 @@
   --line: #333333;
   --accent: #ff4438;    /* a touch brighter so red still pops on black */
 
-  /* Chips flip to light ink on black, and the whole set can take more chroma
-     up here: sRGB is widest around L 0.7 for most hues, so dark-mode chips
-     are the more colourful of the two themes. The alternate band still goes
-     darker — going lighter instead would run straight out of gamut in the
-     blues. Closest pair measures 0.107 in Oklab (was 0.063), worst chip
-     5.2:1 against its own washed background. */
-  --tag-l: 0.76;
-  --tag-l-alt: 0.66;
-  --tag-c: 0.13;
+  /* Chip fills are lifted into a brighter lightness band on the dark page
+     (app.js maps them there) so a block never sinks into the background.
+     Hue and chroma are held, so a topic stays recognisably itself across
+     the theme flip. THEMES.dark in app.js mirrors the --bg/--text above. */
 
   color-scheme: dark;
 }
@@ -301,14 +286,18 @@ a { color: inherit; }
 .tagbar__list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  /* Roomier than the chips on the cards: the selected chip grows a ring, and
+     the gap has to clear it on both axes. */
+  gap: 0.55rem 0.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 /* The "All" reset chip is the one chip with no topic, so it stays monochrome
-   and inverts to the page's own ink when nothing is filtered. */
+   and inverts to the page's own ink when nothing is filtered. Inverting is
+   enough of a selected state on its own here, so it skips the ring the
+   coloured chips get. */
 .tag--all {
   border-color: var(--line);
   background: transparent;
@@ -380,72 +369,69 @@ a { color: inherit; }
   list-style: none;
 }
 .tag {
-  /* --tag-hue is written onto each chip by app.js from the tag vocabulary, so
-     no two tags share a colour. The 0 below is only the fallback for a chip
-     rendered without it; --tag-lch bundles the three OKLCH components so the
-     ink, the border and the wash below can't drift apart. */
-  --tag-hue: 0;
-  --tag-lch: var(--tag-l) var(--tag-c) var(--tag-hue);
+  /* app.js writes all four of these onto the chip — one fill/ink pair per
+     theme — and the rule below swaps which pair is live. Doing it here
+     rather than in JS means the theme toggle never has to repaint a chip.
+     The fallbacks are what the "All" chip (no topic, so no colour) and any
+     tag rendered before the palette exists fall back to. */
+  --tag-fill: var(--tag-light-fill, transparent);
+  --tag-ink: var(--tag-light-ink, var(--text));
 
   font: inherit;
   font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
-  padding: 0.22rem 0.55rem;
-  border: 1px solid var(--line);   /* neutral base; recoloured on the next line */
-  border-color: oklch(var(--tag-lch) / 0.45);
+  padding: 0.24rem 0.6rem;
+  border: 1px solid var(--tag-fill);   /* .tag--all overrides this: no fill */
   border-radius: 2px;
-  background: oklch(var(--tag-lch) / 0.12);   /* light wash, not a fill */
-  color: oklch(var(--tag-lch));
-  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  background: var(--tag-fill);
+  color: var(--tag-ink);
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+[data-theme="dark"] .tag {
+  --tag-fill: var(--tag-dark-fill, transparent);
+  --tag-ink: var(--tag-dark-ink, var(--text));
 }
 
-/* Every other tag in the sorted vocabulary sits in the alternate lightness
-   band (app.js adds this class), so two chips are never separated by hue
-   alone — see the token block at the top of this file for why that matters. */
-.tag--alt { --tag-lch: var(--tag-l-alt) var(--tag-c) var(--tag-hue); }
-
-/* Hover firms up the same hue rather than introducing a second one. The wash
-   stops at 0.14: past that the ink loses its AA margin against it. Selected
-   chips are excluded, or hovering the chip you just clicked would wash the
-   solid fill back out from under you. */
+/* Hover deepens the block toward its own label rather than introducing a
+   second colour. Selected chips are excluded, or hovering the chip you just
+   clicked would shift the fill out from under the ring. */
 .tag:hover:not([disabled]):not([aria-pressed="true"]) {
-  border-color: oklch(var(--tag-lch));
-  background: oklch(var(--tag-lch) / 0.14);
+  background: color-mix(in oklab, var(--tag-fill) 86%, var(--tag-ink));
+  border-color: color-mix(in oklab, var(--tag-fill) 86%, var(--tag-ink));
 }
 
 /* The chip echoed in the active-filter bar carries that tag's own colour
-   (app.js sets --tag-hue on it too), so the banner matches the chip clicked. */
-.tag--active {
-  cursor: default;
-  border-color: oklch(var(--tag-lch));
-  background: oklch(var(--tag-lch) / 0.14);
+   (app.js paints it too), so the banner matches the chip that was clicked. */
+.tag--active { cursor: default; }
+
+/* The selected chip keeps its colour — it is the one thing on screen that
+   answers "which topic am I in" — and gains a ring drawn in the page's own
+   ink, with a gap in the page's paper so the ring reads on every fill.
+   A ring works where the old inversion could not: the fills are already
+   solid, so there is nothing left to invert into. "All" is excluded by name
+   rather than by source order — it inverts instead, and this rule sits later
+   in the file, so it would otherwise win. */
+.tag[aria-pressed="true"]:not(.tag--all) {
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--text);
 }
 
-/* The selected chip in the filter row inverts: the hue becomes the fill and
-   the page background becomes the ink, so "which topic am I in" is readable
-   across the room. Contrast is the ink-on-page figure in reverse — 6.0:1
-   light, 5.9:1 dark — so the inversion is safe for every hue. */
-.tag[aria-pressed="true"] {
-  border-color: oklch(var(--tag-lch));
-  background: oklch(var(--tag-lch));
-  color: var(--bg);
-}
-
-/* A topic the current search can't reach: still readable, clearly not
+/* A topic the current search can't reach: still legible, clearly not
    clickable. Kept in place rather than hidden so the row never reflows. */
 .tag[disabled] {
   cursor: default;
-  opacity: 0.32;
+  opacity: 0.3;
 }
 
-/* Count of matching projects, riding along inside the chip. */
+/* Count of matching projects, riding along inside the chip. It stays at full
+   ink — the label is bold and the count is not, and that weight difference
+   is the whole hierarchy. Fading it instead would drop small text under AA
+   on its own fill. */
 .tag__count {
-  margin-left: 0.4em;
+  margin-left: 0.45em;
   font-family: var(--font-mono);
   font-size: 0.92em;
-  font-weight: 700;
-  opacity: 0.7;
+  font-weight: 400;
 }
 
 /* ---- Entry actions ---------------------------------------------------- */

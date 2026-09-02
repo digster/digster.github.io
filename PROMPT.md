@@ -131,3 +131,21 @@ around a wheel rounded up to an even number of slots, so the alternation
 closes) and by pulling chroma back inside sRGB, where every engine paints the
 same colour. Closest pair in Oklab: 0.043 → 0.077 light, 0.063 → 0.107 dark,
 with WCAG AA still clear at 5.0:1 and 5.2:1.
+
+---
+
+**2026-09-02**
+
+> [screenshot of the topic row] Still not distinct enough.
+
+Rebuilt the tag palette around a different question. The three previous passes
+all spread hues further apart while the chip stayed coloured text on white —
+a treatment that forces every colour to clear AA as ink on paper, which pins
+the whole set inside a thin muted shell of the gamut where a third of the
+wheel collapses toward grey. Chips are now filled blocks with the label
+reversed out of them, which lifts that constraint, and the fills are chosen by
+maximising the smallest perceptual gap in the set (farthest-point seeding plus
+swap refinement in Oklab) instead of by even spacing. Colours are computed in
+JS and shipped as hex, so no engine gamut-maps them differently. Closest pair
+in Oklab: 0.077 → 0.157 light, 0.107 → 0.159 dark; every label clears AA on
+its own fill (4.83:1 light, 4.64:1 dark).

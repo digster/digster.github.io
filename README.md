@@ -50,12 +50,14 @@ Entries are numbered automatically in array order (`01`, `02`, …), so adding a
 object is all it takes. Commit, push, and GitHub Pages redeploys.
 
 **Tag colours are automatic.** Every distinct tag gets a colour of its own,
-derived from whatever tag vocabulary `sites.json` contains: the hues are
-spread evenly around the colour wheel, and every other tag also drops into a
-darker lightness band, so two neighbouring topics are never told apart by hue
-alone. Two tags can never collide and adding a new one needs no CSS. Reuse an
-existing tag where it fits; a brand-new tag re-spaces the wheel and shifts the
-other colours slightly.
+solved from whatever tag vocabulary `sites.json` contains. Each chip is a
+filled block with its label reversed out of it, and `app.js` picks the fills
+by maximising the *smallest* perceptual gap between them in Oklab, inside the
+colours where a label still clears WCAG AA — so the two most similar topics
+are as far apart as the palette allows (0.157 in Oklab today, against 0.077
+for the hue-wheel scheme this replaced). Two tags can never collide and adding
+a new one needs no CSS. Reuse an existing tag where it fits; a brand-new tag
+re-solves the palette and shifts the other colours.
 
 **Filtering.** The topic row above the catalog lists every tag once, with a
 count, so the filters are visible without hunting for a chip on some card.
@@ -91,7 +93,8 @@ python3 -m http.server 8000
 - 🌗 Light/dark theme toggle (remembers your choice, respects your OS default)
 - 🔎 Live search + a clickable topic row with live counts, every tag in its own colour
 - ♿ Accessible (semantic HTML, keyboard-friendly, respects reduced motion, and
-  every tag colour clears WCAG AA contrast in both themes — measured, not assumed)
+  every tag label clears WCAG AA contrast on its own fill in both themes —
+  measured off painted pixels, not assumed)
 - ⚡ Zero dependencies, zero build step, zero external requests
 
 ## License

@@ -3,6 +3,30 @@
 Things this codebase has cost us once already. Read before touching the tag
 palette or writing a browser test against it.
 
+## Colour
+
+- **Distinctness is bounded by the treatment, not by the spacing.** Three
+  passes at the tag palette were spent spreading hues further apart while the
+  chip stayed *coloured text on white*. That treatment forces every colour to
+  clear AA as ink on paper, which confines the whole set to a thin, muted
+  shell of the gamut, and inside that shell yellow, green and teal collapse
+  toward grey however the hues are spaced. Colouring the block instead and
+  reversing the label out of it doubled the closest-pair distance (0.077 →
+  0.157 in Oklab) *and* multiplied the area carrying the colour. When a
+  palette will not separate, question the constraint before the algorithm.
+- **Even spacing is not maximum separation.** Evenly spaced hues are only
+  optimal if the space is a circle. The usable space here is a 3-D volume with
+  ragged edges (gamut on one side, a contrast floor on the other), and picking
+  points by maximising the smallest pairwise distance inside it beats spacing
+  a wheel by roughly 2×. Farthest-point seeding plus swap refinement converges
+  in a few passes and takes ~16 ms for 13 colours — but only after the search
+  loops compare *squared* distances; `Math.hypot` in the inner loop cost 70 ms
+  on its own.
+- **Alphabetical order will still look like a gradient.** Even a
+  well-separated set reads as one ramp if consecutive chips happen to be
+  hue-neighbours. Order the palette so each colour is far from the one before
+  it, not just far from all of them on average.
+
 ## OKLCH colours
 
 - **Chromium clips out-of-gamut OKLCH; it does not gamut-map it.** Ask for
@@ -21,6 +45,11 @@ palette or writing a browser test against it.
   to read on white, so those hues collapse toward grey however far apart their
   hue angles are. Separation there has to come from lightness, which the gamut
   cannot squeeze.
+- **Emitting hex sidesteps the clipping trap entirely.** Deciding the palette
+  in Oklab in JS and shipping `#rrggbb` (via a gamut-checked
+  `oklchToHex()`) means no engine ever has to improvise: the browser is handed
+  a colour it can paint exactly. The rule below still applies to any *new*
+  `oklch()` written by hand in CSS.
 - **An odd vocabulary cannot alternate around a ring.** Any two-colouring of an
   odd cycle has one monochromatic edge, and with 13 tags in 13 hue slots that
   edge — the alphabetically first and last tag — was the closest pair in the
@@ -39,6 +68,10 @@ palette or writing a browser test against it.
   is `oklch(… / 0.12)`. Painting it onto a black canvas base and then measuring
   contrast against it invents figures (a 5.0:1 chip read as 2.7:1). Fill the
   canvas with `getComputedStyle(document.body).backgroundColor` first.
+- **A fill and its label must be measured against each other, not against the
+  page.** With solid chips the label's backdrop is the chip, so the contrast
+  that matters is label-vs-fill; the page only decides whether the *block*
+  is visible at all (a separate, much lower, floor).
 - **Wait for transitions before reading any colour.** `body` transitions
   `background` over 0.3s and `.tag` transitions `color`/`background-color` over
   0.15s, so a reading taken straight after a click or a theme toggle is a
@@ -48,6 +81,11 @@ palette or writing a browser test against it.
 
 ## CSS
 
+- **A later rule of equal specificity wins, so exclude by name.**
+  `.tag[aria-pressed="true"]` and `.tag--all[aria-pressed="true"]` are both
+  (0,2,0); the generic one sits further down the file and quietly took the
+  "All" chip's inversion away. `:not(.tag--all)` on the generic rule is the
+  fix — the same shape as the `:hover` trap below.
 - **`:hover` can out-specify a state class.** `.tag:hover` (0,2,0 with its
   `:not()`s) beat `.tag[aria-pressed="true"]` (0,2,0, declared earlier), so
   hovering a selected chip washed its fill back out. State rules that must

@@ -64,11 +64,11 @@
     "tags": ["reading", "archive"]
   },
   {
-    "name": "unread-articles",
+    "name": "unread",
     "title": "Unread Articles 📥",
     "description": "Beat the backlog — pull up a random article from your unread pile.",
-    "url": "https://digster.github.io/unread-articles/",
-    "repo": "https://github.com/digster/unread-articles",
+    "url": "https://digster.github.io/unread/",
+    "repo": "https://github.com/digster/unread",
     "tags": ["reading", "tools"]
   },
   {

@@ -18,3 +18,4 @@ screenshots/
 *.screenshot.png
 playwright-report/
 test-results/
+.playwright-mcp/

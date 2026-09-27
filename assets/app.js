@@ -6,6 +6,8 @@
      3. Live text search + click-to-filter tag chips (on each card and in the
         topic row above the catalog), every distinct tag in its own colour.
      4. Persisted light/dark theme toggle.
+     5. A personal listing order kept in this browser's localStorage,
+        arranged at ?edit by assets/editor.js (loaded only there).
    Vanilla JS, no dependencies, no build step.
    ========================================================================= */
 (function () {
@@ -25,6 +27,10 @@
   /* ---- Filter state --------------------------------------------------- */
   let query = "";          // current search text (lowercased)
   let activeTag = null;    // currently selected tag, or null
+  let editing = false;     // true in ?edit mode: filters are switched off
+
+  /* ---- Listing order -------------------------------------------------- */
+  let defaultOrder = [];   // slugs in sites.json order — the order for everyone else
 
   /* ---- Tag colours ---------------------------------------------------- */
   let vocabulary = [];       // sorted distinct tags, rebuilt on every load
@@ -358,6 +364,8 @@
       .toLowerCase();
     entry.dataset.search = haystack;
     entry.dataset.tags = (site.tags || []).join(",");
+    // The saved order is a list of slugs, so each card carries its own.
+    entry.dataset.name = site.name;
 
     // Head: index number + title
     const head = document.createElement("div");
@@ -495,7 +503,7 @@
       chip.button.setAttribute("aria-pressed", String(pressed));
       // Never disable the chip that is currently on, or the filter would
       // become impossible to switch off from the row.
-      chip.button.disabled = n === 0 && !pressed;
+      chip.button.disabled = editing || (n === 0 && !pressed);
       chip.button.setAttribute(
         "aria-label",
         (isAll ? "Show all projects" : "Filter by " + chip.tag) +
@@ -547,12 +555,26 @@
   }
 
   function toggleTag(tag) {
+    if (editing) return;
     activeTag = activeTag === tag ? null : tag;
     applyFilters();
   }
 
   function clearTag() {
+    if (editing) return;
     activeTag = null;
+    applyFilters();
+  }
+
+  // Edit mode arranges the *whole* catalog, so filtering is switched off for
+  // the session: a card hidden by a search could not be seen, let alone
+  // dragged, and a move made inside a filtered view would be ambiguous.
+  function lockFilters() {
+    editing = true;
+    query = "";
+    activeTag = null;
+    searchInput.value = "";
+    searchInput.disabled = true;
     applyFilters();
   }
 
@@ -588,6 +610,80 @@
     clearFilterBtn.addEventListener("click", clearTag);
   }
 
+  /* =====================================================================
+     Personal listing order — kept in this browser only.
+
+     sites.json fixes the order everyone sees. On top of that, the owner can
+     rearrange the catalog at ?edit; the result is saved here as a list of
+     slugs and applied before every render, so it also holds on ordinary
+     visits in that browser. Nothing is ever written back to sites.json.
+
+     The key is prefixed because every project served from
+     digster.github.io/<repo>/ shares this origin's localStorage.
+     ===================================================================== */
+  const ORDER_KEY = "digster:catalog-order";
+
+  // The saved list of slugs, or null if there is none (or it is unreadable:
+  // storage blocked, or a value that isn't a list of strings).
+  function readSavedOrder() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(ORDER_KEY));
+      const valid = Array.isArray(saved) && saved.every(function (n) { return typeof n === "string"; });
+      return valid ? saved : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Saved projects first, in the saved order. Anything the saved list doesn't
+  // know — added to sites.json since it was saved — follows in its sites.json
+  // order; slugs that have left sites.json are simply ignored.
+  function orderSites(sites, saved) {
+    if (!saved) return sites;
+    const rank = new Map(saved.map(function (name, i) { return [name, i]; }));
+    return sites
+      .map(function (site, i) {
+        return { site: site, key: rank.has(site.name) ? rank.get(site.name) : saved.length + i };
+      })
+      .sort(function (a, b) { return a.key - b.key; })
+      .map(function (item) { return item.site; });
+  }
+
+  // Store an order. One that matches sites.json is removed instead of stored,
+  // so a later change to the file's own order shows through again. Returns
+  // false if the browser refuses the write (e.g. storage disabled).
+  function saveOrder(names) {
+    try {
+      if (names.join("\n") === defaultOrder.join("\n")) localStorage.removeItem(ORDER_KEY);
+      else localStorage.setItem(ORDER_KEY, JSON.stringify(names));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /* =====================================================================
+     Arrange mode (?edit) — the owner's tool, not the visitors'. The module
+     is only fetched when the page is opened with ?edit, so the public page
+     never downloads it. import() from a classic script resolves against
+     this script's own URL, so "./editor.js" is assets/editor.js.
+     ===================================================================== */
+  function maybeStartEditor() {
+    if (!new URLSearchParams(window.location.search).has("edit")) return;
+    import("./editor.js")
+      .then(function (editor) {
+        editor.startEditor({
+          grid: grid,
+          defaultOrder: defaultOrder,
+          lockFilters: lockFilters,
+          saveOrder: saveOrder,
+        });
+      })
+      .catch(function (err) {
+        console.error("Failed to load the order editor:", err);
+      });
+  }
+
   function showLoadError() {
     grid.setAttribute("aria-busy", "false");
     grid.innerHTML =
@@ -605,8 +701,10 @@
         return res.json();
       })
       .then(function (sites) {
-        render(sites);
+        defaultOrder = sites.map(function (site) { return site.name; });
+        render(orderSites(sites, readSavedOrder()));
         applyFilters();
+        maybeStartEditor();
       })
       .catch(function (err) {
         console.error("Failed to load sites.json:", err);

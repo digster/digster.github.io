@@ -92,6 +92,45 @@ palette or writing a browser test against it.
   survive hover need the hover rule to exclude them —
   `.tag:hover:not([aria-pressed="true"])` — rather than relying on order.
 
+## Arrange mode (`?edit`)
+
+- **Detaching a node releases its pointer capture — and its focus.** The
+  first drag implementation re-inserted the dragged card itself
+  (`insertBefore(entry, …)`) whenever it crossed another card. That silently
+  ended `setPointerCapture`, so after the first swap the grip stopped getting
+  `pointermove`/`pointerup`: auto-scroll froze and the drop never landed.
+  Move the *neighbours* around the dragged node instead (`moveEntryTo()`); it
+  keeps capture and keyboard focus for free. Listening on `window` rather
+  than the grip is the belt to those braces.
+- **Edge auto-scroll zones must arm, not just exist.** A grip visible in the
+  56px band above the toolbar starts its drag *inside* the bottom zone, and a
+  naive "pointer is in the zone → scroll" ran the page away downwards while
+  the card was being dragged up. Each zone now only activates once the
+  pointer has been outside it.
+- **`scroll-behavior: smooth` applies to script scrolls too.** `html` has it,
+  so a per-frame `window.scrollBy(0, dy)` queues a smooth scroll every frame
+  and the auto-scroll crawls. Pass `behavior: "instant"`.
+- **Offsets for hit-testing, rects for animation.** Cards mid-FLIP carry a
+  transform, so `getBoundingClientRect()` jitters as a drop target;
+  `offsetLeft/Top/Width/Height` ignore transforms and give the settled
+  layout. (`.grid` gets `position: relative` in arrange mode so offsets are
+  relative to it.)
+- **All of digster.github.io is one origin.** The root site and every
+  `/<repo>/` project share `localStorage` (the `theme` key already leaks
+  across them), so keys here are prefixed (`digster:catalog-order`).
+
+## Browser testing with the Playwright MCP (local)
+
+- `browser_run_code_unsafe` runs in a sandbox without `Buffer`, `btoa`,
+  `TextEncoder`, `require` or `import()`. Do that work inside the page with
+  `page.evaluate`, and read files over HTTP with `page.request.get()`.
+- `boundingBox()` happily returns coordinates below the fold, **or under the
+  fixed toolbar**. A CDP `Input.dispatchTouchEvent` there hits the wrong
+  element and the page just scrolls natively — which looks exactly like an
+  auto-scroll bug. Check `document.elementFromPoint(x, y)` is the grip first.
+- Screenshots may only be written under the repo; they land in
+  `.playwright-mcp/` (git-ignored) — delete it after testing.
+
 ## Local dev in this sandbox
 
 - `curl` to `127.0.0.1` needs `--noproxy '*'`, or `HTTPS_PROXY` swallows it and

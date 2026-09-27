@@ -14,14 +14,18 @@ deploys instant and the project approachable.
 ## Components & data flow
 
 ```
-                data/sites.json  (source of truth)
+                data/sites.json  (source of truth — its array order is the default order)
                         │  fetch() at runtime
                         ▼
 index.html ──loads──▶ assets/app.js ──renders──▶ <nav class="tagbar"> chips
-     │                     │           └────────────▶ <section id="grid"> cards
-     │ links              │ reads/writes
-     ▼                     ▼
-assets/style.css     localStorage["theme"]  (persisted light/dark)
+     │                  │     │    └────────────▶ <section id="grid"> cards
+     │ links            │     │ import() only with ?edit          ▲ drag / keys
+     ▼                  │     ▼                                   │
+assets/style.css        │   assets/editor.js ─────────────────────┘
+                        │ reads/writes          │ saveOrder() callback
+                        ▼                       ▼
+     localStorage["theme"]            localStorage["digster:catalog-order"]
+     (persisted light/dark)           (personal order, applied before render)
 ```
 
 1. **`index.html`** — semantic shell: a `<header class="masthead">` (wordmark +
@@ -35,7 +39,11 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
 3. **`assets/app.js`** — fetches the JSON, derives the tag vocabulary and its
    colours, builds one card DOM node per entry plus the topic filter row, and
    wires up interactivity. It is an IIFE, no globals leak.
-4. **`assets/style.css`** — all presentation. Theming is done entirely with CSS
+4. **`assets/editor.js`** — **arrange mode**, an ES module `app.js` imports
+   *only* when the URL has `?edit`. Adds a grip to each card (Pointer Events
+   drag + keyboard) and a small toolbar; each move is handed back to
+   `app.js`, which stores it.
+5. **`assets/style.css`** — all presentation. Theming is done entirely with CSS
    custom properties; `[data-theme="dark"]` overrides the token values.
 
 ## Key conventions (project-specific)
@@ -121,6 +129,33 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
   persists it. Avoid hard-coding colors outside the token block.
 - **No `file://` assumptions.** Because content is loaded with `fetch()`, the
   site must be viewed over HTTP. Local dev = `python3 -m http.server`.
+- **Two orders: the file's, and a personal one.** `sites.json`'s array order
+  is what everyone sees. On top of it, `app.js` applies an optional list of
+  slugs from `localStorage["digster:catalog-order"]` *before* rendering
+  (`orderSites()`): saved projects first in saved order, anything newer in
+  file order after them, unknown slugs ignored, anything unreadable ignored.
+  Numbers `01…NN` are positions in whatever order is shown. Nothing is ever
+  written back to `sites.json`.
+- **`app.js` owns the storage; the editor only arranges.** The key, reading,
+  and writing live in `app.js` (`readSavedOrder()` / `saveOrder()`), because
+  the order must apply on ordinary visits when the editor isn't loaded. The
+  editor receives `{ grid, defaultOrder, lockFilters, saveOrder }` and calls
+  `saveOrder()` after every keyboard move and every completed drag. An order
+  identical to the file's is *removed* rather than stored, so later changes
+  to the file's own order show through again. Each card carries `data-name`.
+- **The editor is lazy.** Without `?edit`, `app.js` never loads editor code,
+  so the public page's payload is unchanged. `lockFilters()` switches search
+  and topic filtering off for the session — arranging a filtered view would
+  be ambiguous.
+- **Reorders move the neighbours, never the dragged node.** `moveEntryTo()`
+  shuffles the *other* cards around the one being moved. Detaching a node,
+  even to re-insert it immediately, releases its pointer capture and drops
+  its focus — mid-drag that strands the gesture (see `LEARNINGS.md`). Real DOM
+  order changes (not CSS `order`), so Tab order matches what is on screen.
+- **Storage keys are prefixed.** Every Pages project under
+  `digster.github.io/<repo>/` shares the `https://digster.github.io` origin,
+  and so its `localStorage`. `digster:catalog-order` keeps this site's key
+  from colliding with theirs.
 - **`.nojekyll`** is present so GitHub Pages serves files verbatim.
 - **No external requests** except the GitHub avatar image in the masthead. Fonts
   are a system grotesque stack; the favicon is an inline SVG data URI. Keep it
@@ -131,6 +166,8 @@ assets/style.css     localStorage["theme"]  (persisted light/dark)
 | Task              | How                                                        |
 | ----------------- | --------------------------------------------------------- |
 | Preview locally   | `python3 -m http.server 8000` then open `localhost:8000`  |
+| Arrange the order | Open `/?edit` — see `README.md`; it saves to this browser only |
+| Test arrange mode | In a real browser at `/?edit`: keyboard moves, a mouse drag across rows *and* into the top auto-scroll zone, Escape mid-drag, Reset, and a CDP touch drag (grip must be visible — not under the toolbar). Then check a plain reload keeps the order, and seed stale/corrupt values into `digster:catalog-order` to confirm the fallback |
 | Add a project     | Append an object to `data/sites.json` (see `README.md`)   |
 | Validate the data | `python3 -m json.tool data/sites.json`                    |
 | Check tag colours | Paint each chip's computed fill into a 1×1 canvas and read the pixels back (never parse the string); assert distinct fills, the closest Oklab pair, and each label's contrast against its own fill, in both themes |

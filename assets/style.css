@@ -94,6 +94,19 @@ a { color: inherit; }
   font-size: 0.72rem;
 }
 
+/* Present for screen readers, invisible on screen (hints, live regions). */
+.u-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ---- Page frame ------------------------------------------------------- */
 .page {
   max-width: var(--maxw);
@@ -489,6 +502,113 @@ a { color: inherit; }
   text-decoration: none;
 }
 .footer__link a:hover { color: var(--accent); }
+
+/* =====================================================================
+   Arrange mode (?edit) — assets/editor.js builds all of this. Visitors
+   never see it: the module is only loaded with ?edit in the URL.
+   ===================================================================== */
+
+/* Room for the fixed toolbar, so it never covers the last row or footer.
+   editor.js measures the bar into --editor-bar-h (it wraps on a phone). */
+.is-editing .page { padding-bottom: calc(var(--editor-bar-h, 5rem) + 1rem); }
+/* Drag hit-testing reads offsetLeft/offsetTop against the grid. */
+.is-editing .grid { position: relative; }
+/* Filters are off while arranging (app.js disables them too). */
+.search__input:disabled { opacity: 0.45; cursor: not-allowed; }
+.is-editing .entry__tags .tag { pointer-events: none; }
+
+/* Grip. touch-action:none hands touch drags to the editor instead of the
+   page's own scrolling. */
+.entry__handle {
+  flex: 0 0 auto;
+  align-self: center;
+  margin-left: auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  cursor: grab;
+  touch-action: none;
+  transition: border-color 0.16s ease, color 0.16s ease;
+}
+.entry__handle:hover { color: var(--text); border-color: var(--rule); }
+@media (pointer: coarse) {
+  .entry__handle { width: 2.75rem; height: 2.75rem; }   /* 44px touch target */
+}
+
+/* The card being dragged lifts off the page; the rest stays flat. */
+.entry.is-dragging {
+  position: relative;
+  z-index: 3;
+  background: var(--bg);
+  outline: 1.5px solid var(--rule);
+  outline-offset: 0.5rem;
+  box-shadow: 0 18px 40px -12px rgb(0 0 0 / 0.28);
+}
+.entry.is-dragging .entry__handle { cursor: grabbing; color: var(--text); border-color: var(--rule); }
+body.is-dragging { user-select: none; -webkit-user-select: none; cursor: grabbing; }
+
+/* Where the dragged card will land. Absolutely positioned, so it takes no
+   grid cell of its own. */
+.drop-slot {
+  position: absolute;
+  border: 1.5px dashed var(--text-dim);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* ---- Toolbar ----------------------------------------------------------- */
+.editor-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: var(--bg);
+  border-top: 2px solid var(--rule);
+}
+.editor-bar__inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0.85rem clamp(1rem, 4vw, 2.5rem) calc(0.85rem + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+  flex-wrap: wrap;
+}
+.editor-bar__label { margin: 0; color: var(--accent); }
+.editor-bar__status {
+  flex: 1 1 16rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.editor-bar__status[data-tone="error"] { color: var(--accent); font-weight: 700; }
+.editor-bar__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.editor-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6rem 0.95rem;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--text);
+  background: transparent;
+  border: 1.5px solid var(--rule);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.16s ease;
+}
+.editor-btn:hover { border-color: var(--accent); }
 
 /* =====================================================================
    Responsive

@@ -149,3 +149,59 @@ swap refinement in Oklab) instead of by even spacing. Colours are computed in
 JS and shipped as hex, so no engine gamut-maps them differently. Closest pair
 in Oklab: 0.077 → 0.157 light, 0.107 → 0.159 dark; every label clears AA on
 its own fill (4.83:1 light, 4.64:1 dark).
+
+---
+
+**2026-09-26**
+
+> Suggest some ux of reordering the list(on the site).
+
+Suggestions only, no code change. Recommended a small "Sort" segmented control
+between the topic row and the catalog: Index (the curated `sites.json` order,
+default) · A–Z · By topic (grouped under the first tag) · Shuffle, with an
+optional "Newest" once entries carry an `added` date. The key call is to treat
+`01…19` as stable catalog numbers that travel with each project rather than
+renumbering by position. Reordering should move the real DOM nodes (not CSS
+`order`, so focus and reading order match what's shown), animate with FLIP /
+View Transitions (skipped under reduced motion), and be reflected in the URL.
+Author-side curation (a `featured` flag, or an `?edit` drag mode that exports
+JSON) was offered as a separate track.
+
+---
+
+**2026-09-26**
+
+> I should have been more clear with my requirement. What I meant is, I want to manually decide the listing order and I should be able to do it on the site itself.
+
+Built an owner-only order editor at `/?edit` (`assets/editor.js`, loaded on
+demand so visitors never download it). Each card gets a grip you can drag with
+mouse, touch or pen (auto-scrolling near the edges), move with the arrow keys
+(←/→ one place, ↑/↓ one row, Home/End), or skip by typing a new number into
+its position. **Save order** commits the order to `data/sites.json` through the
+GitHub contents API with a fine-grained token (pre-filled creation link; kept
+in memory unless "Remember on this device" is ticked, because every
+`digster.github.io/<repo>` project shares that storage). Saves re-order
+GitHub's latest copy by slug with its `sha`, write the file in its own house
+style so the diff is just the moved blocks, and name what moved in the commit
+message. Added 18 `node --test` unit tests and browser-tested with Playwright
+against a mocked API.
+
+---
+
+**2026-09-26**
+
+> I was only asking you for suggestions, why did you start working? I don't want the changes committed to the JSON file. Just maintain the order on my browser's local storage and display it accordingly. You have overcomplicated the solution.
+
+(Follow-up answers: simplify the uncommitted editor to localStorage; keep the
+hidden `?edit` entry point.)
+
+Replaced the GitHub-saving editor (never committed) with a browser-only
+personal order. `app.js` keeps a list of slugs in
+`localStorage["digster:catalog-order"]` and sorts `sites.json` by it before
+every render — saved projects first, newer ones after in file order, unknown
+or unreadable values ignored; an order identical to the file's is removed
+rather than stored. `?edit` loads `assets/editor.js`, now just the arranging
+tool: drag the grip (mouse, touch, pen; edge auto-scroll) or use the arrow
+keys / Home / End, each move saved at once, plus Reset to default order and
+Done. Removed the token dialog, GitHub API calls, JSON serializer, typed
+positions and their unit tests; docs rewritten to match.

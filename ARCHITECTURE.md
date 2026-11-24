@@ -190,6 +190,20 @@ rotted**. A repo rename leaves a listed entry pointing at a dead URL while the
 project itself is alive under a new slug, so audit for removals as well as
 additions. (`3d-physics` → `3d-physics-course` did exactly this.)
 
+To enumerate the account's repos in a cloud session (the GitHub MCP `search_*`
+tools aren't available there), the search API through `gh` works:
+
+```bash
+gh api -X GET search/repositories -f q='user:digster' -f per_page=100 --paginate \
+  --jq '.items[] | [.name, .created_at[:10], .pushed_at[:10]] | @tsv'
+```
+
+A `200` on an existing entry is not the end of it: **re-check any number quoted
+in a description** against the live page. Course and recipe counts are written
+into the data because they describe a fixed scope, but the scope itself can
+grow (`sdl3-tuts` 75 → 87 recipes, `3d-engine-course` 94 → 113 lessons). Repos
+whose `pushed_at` is newer than their entry's last edit are the ones to read.
+
 ## Why these decisions
 
 - **JSON data file over hard-coded HTML:** lets the gallery grow by editing one

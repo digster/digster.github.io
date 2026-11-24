@@ -131,6 +131,21 @@ palette or writing a browser test against it.
 - Screenshots may only be written under the repo; they land in
   `.playwright-mcp/` (git-ignored) — delete it after testing.
 
+## Auditing the data
+
+- **Counts in descriptions rot even while the URL stays `200`.** A Pages
+  audit that only probes status codes misses a course that grew: two entries
+  sat for months quoting 75 recipes and 94 lessons after their sites moved to
+  87 and 113. Read the live page of every repo pushed since its entry was last
+  edited.
+- **Read a page's counts after its JavaScript, not from the raw HTML.**
+  `graphics-handbook` ships a static fallback ("Early access · 2 of 64 chapters
+  written") that its script rewrites from the nav data on load; the live site
+  is complete (64/64 published). Grepping the HTML alone would have described
+  it as an early draft. Check the data file the page renders from.
+- **`has_pages: true` does not mean live.** `global-claude` carries the flag
+  but answers `404` at `/global-claude/` — the probe, not the flag, decides.
+
 ## Local dev in this sandbox
 
 - `curl` to `127.0.0.1` needs `--noproxy '*'`, or `HTTPS_PROXY` swallows it and

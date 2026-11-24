@@ -205,3 +205,17 @@ tool: drag the grip (mouse, touch, pen; edge auto-scroll) or use the arrow
 keys / Home / End, each move saved at once, plus Reset to default order and
 Done. Removed the token dialog, GitHub API calls, JSON serializer, typed
 positions and their unit tests; docs rewritten to match.
+
+---
+
+**2026-11-24**
+
+> Look for any updates to the GitHub pages and update the data file accordingly.
+
+Audited all 74 account repos by probing `https://digster.github.io/<repo>/`:
+21 × `200`, 53 × `404`. Added the one new live site, `graphics-handbook`
+("Graphics Handbook 🔦", slot 20), and corrected two counts that had drifted
+on live sites still listed: SDL3 Recipes 75 → 87 recipes, Professional 3D Game
+Engine 94 → 113 lessons. Nothing removed — all 19 existing URLs still answer
+`200`. Documented the count re-check in the audit section of `ARCHITECTURE.md`
+and added an "Auditing the data" section to `LEARNINGS.md`.

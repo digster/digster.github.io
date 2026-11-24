@@ -10,7 +10,7 @@
   {
     "name": "sdl3-tuts",
     "title": "SDL3 Recipes 🎮",
-    "description": "75 hands-on C++ game-dev recipes spanning 2D, 3D and bgfx, all built on SDL3.",
+    "description": "87 hands-on C++ game-dev recipes spanning 2D, 3D and bgfx, all built on SDL3.",
     "url": "https://digster.github.io/sdl3-tuts/",
     "repo": "https://github.com/digster/sdl3-tuts",
     "tags": ["gamedev", "c++", "tutorial"]
@@ -90,7 +90,7 @@
   {
     "name": "3d-engine-course",
     "title": "Professional 3D Game Engine ⚙️",
-    "description": "A 94-lesson course on designing, building and shipping a production-shaped 3D engine in C++20 on SDL3 — architecture and craft, not just rendering.",
+    "description": "A 113-lesson course on designing, building and shipping a production-shaped 3D engine in C++20 on SDL3 — architecture and craft, not just rendering.",
     "url": "https://digster.github.io/3d-engine-course/",
     "repo": "https://github.com/digster/3d-engine-course",
     "tags": ["gamedev", "graphics", "c++"]
@@ -150,5 +150,13 @@
     "url": "https://digster.github.io/civ-timeline/",
     "repo": "https://github.com/digster/civ-timeline",
     "tags": ["interactive", "learning"]
+  },
+  {
+    "name": "graphics-handbook",
+    "title": "Graphics Handbook 🔦",
+    "description": "A visual handbook of real-time graphics for game leads who direct AI — 64 chapters that trace a frame from the art tools and engine to the finished image, and teach what each technique costs, how it breaks and how to brief it.",
+    "url": "https://digster.github.io/graphics-handbook/",
+    "repo": "https://github.com/digster/graphics-handbook",
+    "tags": ["graphics", "gamedev", "learning"]
   }
 ]
